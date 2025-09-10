@@ -12,3 +12,4 @@ https://dbdiagram.io/d/항해99-이커머스-과제2-68b5a155777b52b76c7fa7cd
 -> documnet폴더 내 PDF도 첨부
 
 😁인프라 구성도
+https://www.notion.so/26a5f9473e6980b8b22ad7d9c3e4f910
