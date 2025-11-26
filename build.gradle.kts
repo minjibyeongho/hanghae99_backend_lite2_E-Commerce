@@ -36,6 +36,15 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
+	// lombok plugin
+	implementation("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
+
+	// test 환경
+	testImplementation("org.projectlombok:lombok")
+	testAnnotationProcessor("org.projectlombok:lombok")
+	// https://inpa.tistory.com/entry/IntelliJ-💽-Lombok-설치-방법-오류-해결 [Inpa Dev 👨‍💻:티스토리]
+
     // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
 
