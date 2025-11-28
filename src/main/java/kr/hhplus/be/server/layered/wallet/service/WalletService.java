@@ -1,16 +1,50 @@
 package kr.hhplus.be.server.layered.wallet.service;
 
-public interface WalletService {
+import kr.hhplus.be.server.layered.wallet.model.Wallet;
+import kr.hhplus.be.server.layered.wallet.model.WalletHistory;
+import kr.hhplus.be.server.layered.wallet.repository.WalletHistoryJpaRepository;
+import kr.hhplus.be.server.layered.wallet.repository.WalletJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-    // 유저 - 지갑은 1:1 매칭으로 가정
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class WalletServiceImpl {
+
+    private final WalletJpaRepository walletRepository;
+    private final WalletHistoryJpaRepository walletHistoryRepository;
+
+    @Transactional
+    public WalletHistory charge(Long userId, Integer amount) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
+
+        Integer beforeBalance = wallet.getBalance();
+        wallet.addAmount(amount);
+
+        // 이력 저장
+        WalletHistory history = WalletHistory.createChargeHistory(wallet, amount, beforeBalance);
+        return walletHistoryRepository.save(history);
+    }
 
     // 잔액 조회
-    Integer getBalance(Long wallet_id);
+    public Integer getBalance(Long userId) {
+        return walletRepository.findByUserId(userId)
+                .map(Wallet::getBalance)
+                .orElse(0);
+    }
 
-    // 잔액 충전
-    void addBalance(Long wallet_id, Integer amount);
+    @Transactional
+    public WalletHistory processPayment(Long userId, Integer amount) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
 
-    // 잔액 차감(차감 후 변경된 잔액 리턴)
-    Integer subtractBalance(Long wallet_id, Integer amount);
+        Integer beforeBalance = wallet.getBalance();
+        wallet.substractAmount(amount);
 
+        WalletHistory history = WalletHistory.createPaymentHistory(wallet, amount, beforeBalance);
+        return walletHistoryRepository.save(history);
+    }
 }

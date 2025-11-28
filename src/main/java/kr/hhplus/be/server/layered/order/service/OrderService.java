@@ -1,5 +1,8 @@
 package kr.hhplus.be.server.layered.order.service;
 
-public interface OrderService {
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderServiceImpl implements OrderService {
 
 }
