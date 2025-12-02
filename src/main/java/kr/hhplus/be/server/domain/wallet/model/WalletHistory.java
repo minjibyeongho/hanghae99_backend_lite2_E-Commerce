@@ -75,4 +75,40 @@ public class WalletHistory {
                 .memo("결제 차감")
                 .build();
     }
+
+    /**
+     * 잔액 변동량 계산
+     * @return afterBalance - beforeBalance
+     */
+    public Integer getBalanceChange() {
+        return this.afterBalance - this.beforeBalance;
+    }
+
+    /**
+     * 잔액 증가 여부
+     */
+    public boolean isBalanceIncreased() {
+        return this.afterBalance > this.beforeBalance;
+    }
+
+    /**
+     * 잔액 감소 여부
+     */
+    public boolean isBalanceDecreased() {
+        return this.afterBalance < this.beforeBalance;
+    }
+
+    /**
+     * 충전 이력 여부
+     */
+    public boolean isCharge() {
+        return this.status == WalletHistoryStatus.CHARGE;
+    }
+
+    /**
+     * 결제 이력 여부
+     */
+    public boolean isPayment() {
+        return this.status == WalletHistoryStatus.PAYMENT;
+    }
 }

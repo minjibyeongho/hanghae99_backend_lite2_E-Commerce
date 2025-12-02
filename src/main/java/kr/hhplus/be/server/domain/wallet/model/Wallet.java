@@ -33,7 +33,17 @@ public class Wallet {
         this.balance = balance != null ? balance : 0;
     }
 
-    public Integer addAmount(int amount){
+    // 테스트용 추가
+    public static Wallet withId(Long walletId, Long userId, String walletName, Integer balance) {
+        Wallet wallet = new Wallet(userId, walletName, balance);
+        wallet.walletId = walletId;  // Reflection 없이 직접 할당
+        return wallet;
+    }
+
+    public Integer addAmount(Integer amount){
+        if(amount == null)
+            throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
+
         if(amount <= 0)
             throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
 
@@ -43,7 +53,7 @@ public class Wallet {
         return this.balance;
     }
 
-    public Integer substractAmount(int amount){
+    public Integer substractAmount(Integer amount){
 
         if(amount <= 0){
             throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다.");
