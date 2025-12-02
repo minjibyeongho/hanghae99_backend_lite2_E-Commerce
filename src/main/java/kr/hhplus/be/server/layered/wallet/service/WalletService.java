@@ -11,13 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class WalletServiceImpl {
+public class WalletService {
 
     private final WalletJpaRepository walletRepository;
     private final WalletHistoryJpaRepository walletHistoryRepository;
 
+    // 잔액 충전
     @Transactional
-    public WalletHistory charge(Long userId, Integer amount) {
+    public WalletChargeResponse charge(Long userId, Integer amount) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
 
@@ -26,14 +27,16 @@ public class WalletServiceImpl {
 
         // 이력 저장
         WalletHistory history = WalletHistory.createChargeHistory(wallet, amount, beforeBalance);
-        return walletHistoryRepository.save(history);
+        walletHistoryRepository.save(history);
+        return new WalletChargeResponse(wallet.getWalletId(), wallet.getBalance());
     }
 
     // 잔액 조회
-    public Integer getBalance(Long userId) {
-        return walletRepository.findByUserId(userId)
-                .map(Wallet::getBalance)
-                .orElse(0);
+    public WalletBalanceResponse getBalance(Long userId) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다"));
+
+        return new WalletBalanceResponse(wallet.getWalletId(), wallet.getBalance());
     }
 
     @Transactional
@@ -47,4 +50,8 @@ public class WalletServiceImpl {
         WalletHistory history = WalletHistory.createPaymentHistory(wallet, amount, beforeBalance);
         return walletHistoryRepository.save(history);
     }
+
+    // DTO
+    public record WalletChargeResponse(Long walletId, Integer balance) {}
+    public record WalletBalanceResponse(Long walletId, Integer balance) {}
 }

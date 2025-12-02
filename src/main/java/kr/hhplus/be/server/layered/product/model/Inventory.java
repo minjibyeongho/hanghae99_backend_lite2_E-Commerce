@@ -1,7 +1,10 @@
 package kr.hhplus.be.server.layered.product.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 
@@ -10,32 +13,66 @@ import java.sql.Timestamp;
 @Getter
 public class Inventory {
 
-    @Id @GeneratedValue
-    private Long inventory_id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long inventoryId;
 
-    @JoinColumn(name = "product_id")
-    private Long product_id;
+    @Column(nullable = false, unique = true)
+    private Long productId;
 
-    private Integer real_quantity;              // 실제 재고 수량
-    private Integer reserved_tmp_quantity;      // 임시 예약 재고 수량
-    private Integer reserved_confirm_quantity;  // 확정 예약 재고 수량
-    private Integer available_quantity;         // 예약 가능 재고 수량
-    private Timestamp created_at;               // 생성일시
-    private Timestamp updated_at;               // 수정일시
+    @Column(nullable = false)
+    private Integer realQuantity;              // 실제 재고 수량
+    @Column(nullable = false)
+    private Integer reservedTmpQuantity;      // 임시 예약 재고 수량
+    @Column(nullable = false)
+    private Integer reservedConfirmQuantity;  // 확정 예약 재고 수량
+    @Column(nullable = false)
+    private Integer availableQuantity;         // 예약 가능 재고 수량
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Timestamp createdAt;               // 생성일시
+    @UpdateTimestamp
+    private Timestamp updatedAt;               // 수정일시
+
+    @Version
     private Long version;                       // 낙관적 락
 
     protected Inventory(){};
 
+    @Builder
+    public Inventory(Long productId, Integer realQuantity) {
+        this.productId = productId;
+        this.realQuantity = realQuantity;
+        this.reservedTmpQuantity = 0;
+        this.reservedConfirmQuantity = 0;
+        this.availableQuantity = realQuantity;
+    }
 
-    /*
-        inventory_id BIGINT [primary key, note: '재고 식별자']
-        product_id BIGINT [note: '상품 식별자']
-        real_quantity Integer [note: '실제 재고 수량']
-        reserved_tmp_quantity Integer [note: '임시 예약 재고 수량']
-        reserved_confirm_quantity Integer [note: '확정 예약 재고 수량']
-        available_quantity Integer [note: '예약 가능 재고 수량']
-        created_at timestamp [note: '생성일시']
-        updated_at timestamp [note: '수정일시']
-        version BIGINT [note: '낙관적 락']
-     */
+    // 임시 예약
+    public void reserveTemporary(Integer quantity) {
+        if (this.availableQuantity < quantity) {
+            throw new IllegalStateException("재고가 부족합니다");
+        }
+        this.reservedTmpQuantity += quantity;
+        this.availableQuantity -= quantity;
+    }
+
+    // 예약 확정
+    public void confirmReservation(Integer quantity) {
+        this.reservedTmpQuantity -= quantity;
+        this.reservedConfirmQuantity += quantity;
+    }
+
+    // 재고 보충
+    public void supply(Integer quantity) {
+        this.realQuantity += quantity;
+        this.availableQuantity += quantity;
+    }
+
+    // 판매 완료 (확정 예약 제거)
+    public void completeSale(Integer quantity) {
+        this.reservedConfirmQuantity -= quantity;
+        this.realQuantity -= quantity;
+    }
 }

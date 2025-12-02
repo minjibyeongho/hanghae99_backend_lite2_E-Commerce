@@ -1,41 +1,61 @@
 package kr.hhplus.be.server.layered.wallet.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import kr.hhplus.be.server.layered.user.model.User;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "`wallet`")
+@Table(name = "wallet")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Wallet {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long wallet_id;
+    private Long walletId;
 
-    @JoinColumn(name = "user_id")
-    private Long user_id;
+    @Column(nullable = false)
+    private Long userId;
 
-    private String wallet_name;
+    private String walletName;
+
+    @Column(nullable = false)
     private Integer balance;
-    private Timestamp created_at;
-    private Timestamp updated_at;
 
-    public void addAmount(int amount){
-        if(amount < 0)
-            throw new IllegalArgumentException("충전 금액은 음수일 수 없습니다.");
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
 
-        this.balance += amount;
-        this.updated_at = Timestamp.valueOf(LocalDateTime.now());
+    @Builder
+    public Wallet(Long userId, String walletName, Integer balance) {
+        this.userId = userId;
+        this.walletName = walletName;
+        this.balance = balance != null ? balance : 0;
     }
 
-    public void substractAmount(int amount){
+    public Integer addAmount(int amount){
+        if(amount <= 0)
+            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+
+        this.balance += amount;
+        this.updatedAt = Timestamp.valueOf(LocalDateTime.now());
+
+        return this.balance;
+    }
+
+    public Integer substractAmount(int amount){
+
+        if(amount <= 0){
+            throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다.");
+        }
+
         if(this.balance < amount)
             throw new IllegalArgumentException("잔액이 부족합니다(차감액 > 잔액).");
 
         this.balance -= amount;
-        this.updated_at = Timestamp.valueOf(LocalDateTime.now());
+        this.updatedAt = Timestamp.valueOf(LocalDateTime.now());
+        return this.balance;
     }
 
 }

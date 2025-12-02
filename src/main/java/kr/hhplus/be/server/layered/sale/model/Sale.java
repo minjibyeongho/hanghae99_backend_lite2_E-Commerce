@@ -1,47 +1,56 @@
 package kr.hhplus.be.server.layered.sale.model;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
 @Table(name = "sale")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Sale {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long sale_id;
-
-    @JoinColumn(name = "product_id")
-    private Long product_id;
-
-    @JoinColumn(name = "order_id")
-    private Long order_id;
-
-    private String product_name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long saleId;
 
     @Column(nullable = false)
-    private Integer sold_quantity;
-    private Integer sold_total_amount;
+    private Long productId;
 
-    private Timestamp sold_at;
-    private Long category_id;
-    private String category_name;
+    @Column(nullable = false)
+    private Long orderId;
 
-    protected Sale() {};
+    @Column(nullable = false)
+    private String productName;
 
-    private Sale(String product_name, Integer sold_quantity, Integer sold_total_amount, Timestamp sold_at, Long category_id, String category_name) {
-        this.product_name = product_name;
-        this.sold_quantity = sold_quantity;
-        this.sold_total_amount = sold_total_amount;
-        this.sold_at = sold_at;
-        this.category_id = category_id;
-        this.category_name = category_name;
+    @Column(nullable = false)
+    private Integer soldQuantity;
+
+    @Column(nullable = false)
+    private Integer soldTotalAmount;
+
+    @Column(nullable = false)
+    private Timestamp soldAt;
+
+    private Long categoryId;
+
+    private String categoryName;
+
+    @Builder
+    public Sale(Long productId, Long orderId, String productName, Integer soldQuantity,
+                Integer soldTotalAmount, Timestamp soldAt, Long categoryId, String categoryName) {
+        this.productId = productId;
+        this.orderId = orderId;
+        this.productName = productName;
+        this.soldQuantity = soldQuantity;
+        this.soldTotalAmount = soldTotalAmount;
+        this.soldAt = soldAt;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
     }
-
-    public static Sale create(String product_name, Integer sold_quantity, Integer sold_total_amount, Timestamp sold_at, Long category_id, String category_name){
-        return new Sale(product_name, sold_quantity, sold_total_amount, sold_at, category_id, category_name);
-    }
-
 }
