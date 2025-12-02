@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="WalletService 단위 테스트" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-12-02T21:44:21" hostname="minbyeonghoui-MacBookPro.local" time="0.409">
+  <properties/>
+  <testcase name="잔액 충전 성공" classname="kr.hhplus.be.server.domain.wallet.service.WalletServiceTest" time="0.409"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
