@@ -1,8 +1,7 @@
-package kr.hhplus.be.server.layered.order;
+package kr.hhplus.be.server.domain.order;
 
-import kr.hhplus.be.server.layered.order.service.OrderQueryService;
-import kr.hhplus.be.server.layered.order.service.OrderService;
-import kr.hhplus.be.server.layered.order.vo.OrderRequest;
+import kr.hhplus.be.server.domain.order.service.OrderQueryService;
+import kr.hhplus.be.server.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

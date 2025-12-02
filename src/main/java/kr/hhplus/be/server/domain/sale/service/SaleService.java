@@ -1,12 +1,11 @@
-package kr.hhplus.be.server.layered.sale.service;
+package kr.hhplus.be.server.domain.sale.service;
 
-import jakarta.persistence.Cacheable;
-import kr.hhplus.be.server.layered.order.model.Order;
-import kr.hhplus.be.server.layered.order.model.OrderItem;
-import kr.hhplus.be.server.layered.product.model.Product;
-import kr.hhplus.be.server.layered.product.repository.ProductJpaRepository;
-import kr.hhplus.be.server.layered.sale.model.Sale;
-import kr.hhplus.be.server.layered.sale.repository.SaleJpaRepository;
+import kr.hhplus.be.server.domain.order.model.Order;
+import kr.hhplus.be.server.domain.order.model.OrderItem;
+import kr.hhplus.be.server.domain.product.model.Product;
+import kr.hhplus.be.server.domain.product.repository.ProductJpaRepository;
+import kr.hhplus.be.server.domain.sale.model.Sale;
+import kr.hhplus.be.server.domain.sale.repository.SaleJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

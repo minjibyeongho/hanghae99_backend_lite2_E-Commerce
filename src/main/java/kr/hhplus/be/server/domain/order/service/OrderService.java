@@ -1,23 +1,23 @@
-package kr.hhplus.be.server.layered.order.service;
+package kr.hhplus.be.server.domain.order.service;
 
 import kr.hhplus.be.server.common.status.PaymentMethod;
 import kr.hhplus.be.server.common.status.PaymentStatus;
+import kr.hhplus.be.server.domain.coupon.core.port.in.UseCouponCommand;
+import kr.hhplus.be.server.domain.coupon.core.usecase.UseCouponUseCase;
 import kr.hhplus.be.server.external.DataPlatformClient;
-import kr.hhplus.be.server.layered.coupon.repository.UserCouponJpaRepository;
-import kr.hhplus.be.server.layered.coupon.service.CouponService;
-import kr.hhplus.be.server.layered.order.model.Order;
-import kr.hhplus.be.server.layered.order.model.OrderItem;
-import kr.hhplus.be.server.layered.order.repository.OrderItemJpaRepository;
-import kr.hhplus.be.server.layered.order.repository.OrderJpaRepository;
-import kr.hhplus.be.server.layered.payment.model.Payment;
-import kr.hhplus.be.server.layered.payment.repository.PaymentJpaRepository;
-import kr.hhplus.be.server.layered.product.model.InventoryReservation;
-import kr.hhplus.be.server.layered.product.model.Product;
-import kr.hhplus.be.server.layered.product.repository.ProductJpaRepository;
-import kr.hhplus.be.server.layered.product.service.InventoryService;
-import kr.hhplus.be.server.layered.sale.service.SaleService;
-import kr.hhplus.be.server.layered.wallet.model.WalletHistory;
-import kr.hhplus.be.server.layered.wallet.service.WalletService;
+import kr.hhplus.be.server.domain.order.model.Order;
+import kr.hhplus.be.server.domain.order.model.OrderItem;
+import kr.hhplus.be.server.domain.order.repository.OrderItemJpaRepository;
+import kr.hhplus.be.server.domain.order.repository.OrderJpaRepository;
+import kr.hhplus.be.server.domain.payment.model.Payment;
+import kr.hhplus.be.server.domain.payment.repository.PaymentJpaRepository;
+import kr.hhplus.be.server.domain.product.model.InventoryReservation;
+import kr.hhplus.be.server.domain.product.model.Product;
+import kr.hhplus.be.server.domain.product.repository.ProductJpaRepository;
+import kr.hhplus.be.server.domain.product.service.InventoryService;
+import kr.hhplus.be.server.domain.sale.service.SaleService;
+import kr.hhplus.be.server.domain.wallet.model.WalletHistory;
+import kr.hhplus.be.server.domain.wallet.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,9 +41,11 @@ public class OrderService {
 
     private final InventoryService inventoryService;
     private final WalletService walletService;
-    private final CouponService couponService;
     private final SaleService saleService;
     private final DataPlatformClient dataPlatformClient;
+
+    // clean 아키텍쳐 의존으로 변경
+    private final UseCouponUseCase useCouponUseCase;
 
     /**
      * 주문 및 결제 처리
@@ -100,7 +102,8 @@ public class OrderService {
             // 4. 쿠폰 할인 적용
             Integer discount = 0;
             if (couponId != null) {
-                discount = couponService.calculateDiscount(userId, couponId, totalAmount);
+                // discount = couponService.calculateDiscount(userId, couponId, totalAmount);
+                discount = useCouponUseCase.calculateDiscount(userId, couponId, totalAmount);
             }
 
             Integer paymentAmount = totalAmount - discount;
@@ -131,7 +134,9 @@ public class OrderService {
 
             // 8. 쿠폰 사용 처리
             if (couponId != null) {
-                couponService.useCoupon(userId, couponId, order.getOrderId());
+                // couponService.useCoupon(userId, couponId, order.getOrderId());
+                UseCouponCommand command = new UseCouponCommand(userId, couponId, order.getOrderId());
+                useCouponUseCase.execute(command);
             }
 
             // 9. 판매 기록 생성

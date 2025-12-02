@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.external;
 
-import kr.hhplus.be.server.layered.order.model.Order;
-import kr.hhplus.be.server.layered.order.model.OrderItem;
+import kr.hhplus.be.server.domain.order.model.Order;
+import kr.hhplus.be.server.domain.order.model.OrderItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;

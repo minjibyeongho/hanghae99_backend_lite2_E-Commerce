@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.product.model;
+package kr.hhplus.be.server.domain.product.model;
 
 import jakarta.persistence.*;
 import kr.hhplus.be.server.common.status.InventoryHistoryStatus;

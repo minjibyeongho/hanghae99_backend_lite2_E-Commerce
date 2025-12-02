@@ -1,6 +1,6 @@
-package kr.hhplus.be.server.layered.wallet;
+package kr.hhplus.be.server.domain.wallet;
 
-import kr.hhplus.be.server.layered.wallet.service.WalletService;
+import kr.hhplus.be.server.domain.wallet.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,6 @@
-package kr.hhplus.be.server.layered.user.model;
+package kr.hhplus.be.server.domain.user.model;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.layered.wallet.model.Wallet;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

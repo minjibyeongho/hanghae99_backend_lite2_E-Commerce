@@ -1,6 +1,6 @@
-package kr.hhplus.be.server.layered.sale;
+package kr.hhplus.be.server.domain.sale;
 
-import kr.hhplus.be.server.layered.sale.service.SaleService;
+import kr.hhplus.be.server.domain.sale.service.SaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

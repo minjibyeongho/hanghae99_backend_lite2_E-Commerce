@@ -1,9 +1,7 @@
-package kr.hhplus.be.server.layered.product.model;
+package kr.hhplus.be.server.domain.product.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-
-import java.util.List;
 
 @Entity
 @Table(name = "category")

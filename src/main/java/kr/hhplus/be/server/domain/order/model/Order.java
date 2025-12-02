@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.order.model;
+package kr.hhplus.be.server.domain.order.model;
 
 import jakarta.persistence.*;
 import kr.hhplus.be.server.common.status.OrderStatus;
@@ -8,12 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 @Entity
 @Table(name = "orders")

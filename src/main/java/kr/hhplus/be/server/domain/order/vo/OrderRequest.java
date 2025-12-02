@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.order.vo;
+package kr.hhplus.be.server.domain.order.vo;
 
 import java.util.List;
 

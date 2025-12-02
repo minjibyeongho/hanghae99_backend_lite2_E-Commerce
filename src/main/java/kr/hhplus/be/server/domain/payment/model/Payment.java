@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.payment.model;
+package kr.hhplus.be.server.domain.payment.model;
 
 import jakarta.persistence.*;
 import kr.hhplus.be.server.common.status.PaymentMethod;

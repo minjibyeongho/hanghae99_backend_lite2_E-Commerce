@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.order.model;
+package kr.hhplus.be.server.domain.order.model;
 
 import jakarta.persistence.*;
 import lombok.Builder;

@@ -1,9 +1,9 @@
-package kr.hhplus.be.server.layered.order.service;
+package kr.hhplus.be.server.domain.order.service;
 
-import kr.hhplus.be.server.layered.order.model.Order;
-import kr.hhplus.be.server.layered.order.model.OrderItem;
-import kr.hhplus.be.server.layered.order.repository.OrderItemJpaRepository;
-import kr.hhplus.be.server.layered.order.repository.OrderJpaRepository;
+import kr.hhplus.be.server.domain.order.model.Order;
+import kr.hhplus.be.server.domain.order.model.OrderItem;
+import kr.hhplus.be.server.domain.order.repository.OrderItemJpaRepository;
+import kr.hhplus.be.server.domain.order.repository.OrderJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

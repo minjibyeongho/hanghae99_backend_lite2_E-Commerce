@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.sale.model;
+package kr.hhplus.be.server.domain.sale.model;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

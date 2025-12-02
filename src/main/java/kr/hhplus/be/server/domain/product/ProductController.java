@@ -1,7 +1,6 @@
-package kr.hhplus.be.server.layered.product;
+package kr.hhplus.be.server.domain.product;
 
-import kr.hhplus.be.server.layered.product.model.Product;
-import kr.hhplus.be.server.layered.product.service.ProductService;
+import kr.hhplus.be.server.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

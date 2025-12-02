@@ -1,6 +1,6 @@
-package kr.hhplus.be.server.layered.sale.repository;
+package kr.hhplus.be.server.domain.sale.repository;
 
-import kr.hhplus.be.server.layered.sale.model.Sale;
+import kr.hhplus.be.server.domain.sale.model.Sale;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

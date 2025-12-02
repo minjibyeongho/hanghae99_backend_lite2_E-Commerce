@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.layered.wallet.model;
+package kr.hhplus.be.server.domain.wallet.model;
 
 import jakarta.persistence.*;
 import lombok.Builder;

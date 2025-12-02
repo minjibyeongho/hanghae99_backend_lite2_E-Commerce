@@ -1,6 +1,6 @@
-package kr.hhplus.be.server.layered.user.controller;
+package kr.hhplus.be.server.domain.user.controller;
 
-import kr.hhplus.be.server.layered.user.service.UserService;
+import kr.hhplus.be.server.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
