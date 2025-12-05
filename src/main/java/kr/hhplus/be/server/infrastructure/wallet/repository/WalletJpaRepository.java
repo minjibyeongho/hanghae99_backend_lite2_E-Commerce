@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.wallet.repository;
+package kr.hhplus.be.server.infrastructure.wallet.repository;
 
 import kr.hhplus.be.server.domain.wallet.model.Wallet;
 import org.springframework.data.jpa.repository.JpaRepository;

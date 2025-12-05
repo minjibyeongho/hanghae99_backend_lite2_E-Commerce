@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.wallet.repository;
 
 import kr.hhplus.be.server.domain.wallet.model.Wallet;
+import kr.hhplus.be.server.infrastructure.wallet.repository.WalletJpaRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
