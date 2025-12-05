@@ -2,8 +2,8 @@ package kr.hhplus.be.server.domain.product.service;
 
 import kr.hhplus.be.server.domain.product.model.Inventory;
 import kr.hhplus.be.server.domain.product.model.Product;
-import kr.hhplus.be.server.domain.product.repository.InventoryJpaRepository;
-import kr.hhplus.be.server.domain.product.repository.ProductJpaRepository;
+import kr.hhplus.be.server.infrastructure.product.repository.InventoryJpaRepository;
+import kr.hhplus.be.server.infrastructure.product.repository.ProductJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

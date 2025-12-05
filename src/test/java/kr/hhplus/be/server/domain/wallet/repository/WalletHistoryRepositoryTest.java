@@ -3,6 +3,8 @@ package kr.hhplus.be.server.domain.wallet.repository;
 import kr.hhplus.be.server.common.status.WalletHistoryStatus;
 import kr.hhplus.be.server.domain.wallet.model.Wallet;
 import kr.hhplus.be.server.domain.wallet.model.WalletHistory;
+import kr.hhplus.be.server.infrastructure.wallet.repository.WalletHistoryJpaRepository;
+import kr.hhplus.be.server.infrastructure.wallet.repository.WalletJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
