@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.sale.repository;
+package kr.hhplus.be.server.infrastructure.sale.repository;
 
 import kr.hhplus.be.server.domain.sale.model.Sale;
 import org.springframework.data.domain.Pageable;

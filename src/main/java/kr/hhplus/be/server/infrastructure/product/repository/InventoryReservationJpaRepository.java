@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.product.repository;
+package kr.hhplus.be.server.infrastructure.product.repository;
 
 import kr.hhplus.be.server.domain.product.model.InventoryReservation;
 import org.springframework.data.jpa.repository.JpaRepository;

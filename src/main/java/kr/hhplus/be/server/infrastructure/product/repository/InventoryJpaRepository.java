@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.product.repository;
+package kr.hhplus.be.server.infrastructure.product.repository;
 
 import jakarta.persistence.LockModeType;
 import kr.hhplus.be.server.domain.product.model.Inventory;
