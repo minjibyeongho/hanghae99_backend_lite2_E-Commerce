@@ -29,6 +29,7 @@ public class WalletRepositoryTest {
                 .walletName("테스트 지갑")
                 .balance(10000)
                 .build();
+
         walletRepository.save(wallet);
 
         // When

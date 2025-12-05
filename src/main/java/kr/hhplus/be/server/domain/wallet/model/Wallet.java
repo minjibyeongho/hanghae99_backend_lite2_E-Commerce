@@ -40,6 +40,10 @@ public class Wallet {
         return wallet;
     }
 
+    /**
+     * 금액 충전
+     * @return afterBalance(balance+amount)
+     */
     public Integer addAmount(Integer amount){
         if(amount == null)
             throw new IllegalArgumentException("충전 금액은 null일 수 없습니다.");
@@ -53,6 +57,10 @@ public class Wallet {
         return this.balance;
     }
 
+    /**
+     * 금액 차감(결제)
+     * @return afterBalance(balance-amount)
+     */
     public Integer substractAmount(Integer amount){
 
         if(amount <= 0){

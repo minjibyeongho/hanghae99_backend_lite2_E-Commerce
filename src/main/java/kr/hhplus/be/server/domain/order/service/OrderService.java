@@ -4,11 +4,11 @@ import kr.hhplus.be.server.common.status.PaymentMethod;
 import kr.hhplus.be.server.common.status.PaymentStatus;
 import kr.hhplus.be.server.domain.coupon.core.port.in.UseCouponCommand;
 import kr.hhplus.be.server.domain.coupon.core.usecase.UseCouponUseCase;
+import kr.hhplus.be.server.domain.order.repository.OrderItemRepository;
+import kr.hhplus.be.server.domain.order.repository.OrderRepository;
 import kr.hhplus.be.server.external.DataPlatformClient;
 import kr.hhplus.be.server.domain.order.model.Order;
 import kr.hhplus.be.server.domain.order.model.OrderItem;
-import kr.hhplus.be.server.domain.order.repository.OrderItemJpaRepository;
-import kr.hhplus.be.server.domain.order.repository.OrderJpaRepository;
 import kr.hhplus.be.server.domain.payment.model.Payment;
 import kr.hhplus.be.server.domain.payment.repository.PaymentJpaRepository;
 import kr.hhplus.be.server.domain.product.model.InventoryReservation;
@@ -33,9 +33,13 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class OrderService {
 
+    // Clean한 Infrastructure 방식으로 변경
+    // 레이어드 패턴에서는 Jpa entity 자체였다면 인터페이스를 바라보게 변경(결합성 낮아짐)
+    //private final OrderJpaRepository orderRepository;
+    private final OrderRepository orderRepository;  // 인터페이스
+    //private final OrderItemJpaRepository orderItemJpaRepository;
+    private final OrderItemRepository orderItemRepository;  // 인터페이스
 
-    private final OrderJpaRepository orderRepository;
-    private final OrderItemJpaRepository orderItemJpaRepository;
     private final PaymentJpaRepository paymentRepository;
     private final ProductJpaRepository productRepository;
 
@@ -95,7 +99,7 @@ public class OrderService {
                         .totalPrice(itemTotalPrice)
                         .build();
 
-                orderItems.add(orderItemJpaRepository.save(orderItem));
+                orderItems.add(orderItemRepository.save(orderItem));
                 totalAmount += itemTotalPrice;
             }
 
@@ -111,6 +115,7 @@ public class OrderService {
             // 5. Order 금액 업데이트
             order.updateAmounts(totalAmount, paymentAmount);
             order.waitForPayment();
+            order = orderRepository.save(order);
 
             // 6. 결제 처리 (Wallet 차감)
             WalletHistory walletHistory = walletService.processPayment(userId, paymentAmount);
@@ -126,23 +131,23 @@ public class OrderService {
             payment.complete();
             paymentRepository.save(payment);
 
-            // 6. 주문 결제 완료
+            // 7. 주문 결제 완료
             order.completePayment();
 
-            // 7. 재고 확정
+            // 8. 재고 확정
             inventoryService.confirmReservations(reservations, order.getOrderId());
 
-            // 8. 쿠폰 사용 처리
+            // 9. 쿠폰 사용 처리
             if (couponId != null) {
                 // couponService.useCoupon(userId, couponId, order.getOrderId());
                 UseCouponCommand command = new UseCouponCommand(userId, couponId, order.getOrderId());
                 useCouponUseCase.execute(command);
             }
 
-            // 9. 판매 기록 생성
+            // 10. 판매 기록 생성
             saleService.recordSales(order, orderItems);
 
-            // 10. 외부 데이터 플랫폼 전송 (비동기)
+            // 11. 외부 데이터 플랫폼 전송 (비동기)
             dataPlatformClient.sendOrderData(order, orderItems);
 
             return new OrderResponse(
@@ -166,6 +171,4 @@ public class OrderService {
     // DTO
     public record OrderItemRequest(Long productId, Integer quantity) {}
     public record OrderResponse(Long orderId, String orderNumber, String orderStatus, Integer paymentAmount) {}
-
-
 }
