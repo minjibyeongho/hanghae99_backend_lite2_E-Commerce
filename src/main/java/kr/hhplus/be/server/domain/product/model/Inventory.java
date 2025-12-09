@@ -23,9 +23,7 @@ public class Inventory {
     @Column(nullable = false)
     private Integer realQuantity;              // 실제 재고 수량
     @Column(nullable = false)
-    private Integer reservedTmpQuantity;      // 임시 예약 재고 수량
-    @Column(nullable = false)
-    private Integer reservedConfirmQuantity;  // 확정 예약 재고 수량
+    private Integer reservedQuantity;          // 예약 재고 수량
     @Column(nullable = false)
     private Integer availableQuantity;         // 예약 가능 재고 수량
 
@@ -44,35 +42,74 @@ public class Inventory {
     public Inventory(Long productId, Integer realQuantity) {
         this.productId = productId;
         this.realQuantity = realQuantity;
-        this.reservedTmpQuantity = 0;
-        this.reservedConfirmQuantity = 0;
+        this.reservedQuantity = 0;
         this.availableQuantity = realQuantity;
     }
 
-    // 임시 예약
-    public void reserveTemporary(Integer quantity) {
+    // 테스트용 추가
+    public static Inventory withAllQuantities(Long productId, Integer realQuantity, Integer reservedQuantity, Integer availableQuantity) {
+        Inventory inventory = new Inventory(productId, realQuantity);
+        inventory.availableQuantity = availableQuantity;
+        inventory.reservedQuantity = reservedQuantity;
+
+        return inventory;
+    }
+
+    // 재고 예약(주문 생성 시)
+    public void reserve(Integer quantity) {
+        // 가용 재고 확인
         if (this.availableQuantity < quantity) {
-            throw new IllegalStateException("재고가 부족합니다");
+            throw new IllegalStateException(
+                    String.format("재고가 부족합니다. [상품ID: %d] 요청: %d개, 가용: %d개",
+                            this.productId, quantity, this.availableQuantity)
+            );
         }
-        this.reservedTmpQuantity += quantity;
+
+        this.reservedQuantity += quantity;
         this.availableQuantity -= quantity;
     }
 
-    // 예약 확정
+    // 예약 확정(+ 재고 차감)
     public void confirmReservation(Integer quantity) {
-        this.reservedTmpQuantity -= quantity;
-        this.reservedConfirmQuantity += quantity;
+        // 예약 수량 확인
+        if (this.reservedQuantity < quantity) {
+            throw new IllegalStateException(
+                    String.format("예약 수량이 부족합니다. [상품ID: %d] 요청: %d개, 예약: %d개",
+                            this.productId, quantity, this.reservedQuantity)
+            );
+        }
+
+        this.reservedQuantity -= quantity;
+        this.realQuantity -= quantity;
+        this.availableQuantity = this.realQuantity - this.reservedQuantity;
     }
 
     // 재고 보충
     public void supply(Integer quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("입고 수량은 0보다 커야 합니다");
+        }
+
         this.realQuantity += quantity;
         this.availableQuantity += quantity;
     }
 
-    // 판매 완료 (확정 예약 제거)
-    public void completeSale(Integer quantity) {
-        this.reservedConfirmQuantity -= quantity;
-        this.realQuantity -= quantity;
+    // 예약 취소 - 추가
+    public void cancelReservation(Integer quantity) {
+        // 예약 수량 확인
+        if (this.reservedQuantity < quantity) {
+            throw new IllegalStateException(
+                    String.format("취소할 예약 수량이 부족합니다. [상품ID: %d] 요청: %d개, 예약: %d개",
+                            this.productId, quantity, this.reservedQuantity)
+            );
+        }
+
+        this.reservedQuantity -= quantity;
+        this.availableQuantity = this.realQuantity - this.reservedQuantity;
+    }
+
+    // 가용 재고 조회
+    public boolean isAvailable(Integer quantity) {
+        return this.availableQuantity >= quantity;
     }
 }

@@ -29,11 +29,11 @@ public class InventoryReservation {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReservationType reservationType; // SOFT, HARD
+    private ReservationType reservationType; // ORDER, CART, PROMOTION, ADMIN_LOCK
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private InventoryReservationStatus status; // ACTIVE, EXPIRED, CANCELLED, COMPLETED
+    private InventoryReservationStatus status; // RESERVED, CONFIRMED, CANCELLED, EXPIRED
 
     private Long orderId;
 
@@ -49,32 +49,49 @@ public class InventoryReservation {
     protected InventoryReservation() {}
 
     @Builder
-    public InventoryReservation(Long productId, Long userId, Integer quantity,
+    public InventoryReservation(Long productId, Long userId, Integer quantity, InventoryReservationStatus status,
                                 ReservationType reservationType, LocalDateTime expiresAt) {
         this.productId = productId;
         this.userId = userId;
         this.quantity = quantity;
+        this.status = status;
         this.reservationType = reservationType;
-        this.status = InventoryReservationStatus.ACTIVE;
+        this.status = InventoryReservationStatus.RESERVED;
         this.expiresAt = expiresAt;
     }
 
-    // 예약 확정
+    // 예약 확정(주문 완료 시)
     public void confirm(Long orderId) {
-        if (!(InventoryReservationStatus.ACTIVE==this.status)) {
-            throw new IllegalStateException("활성 상태의 예약만 확정할 수 있습니다");
+        if (!(InventoryReservationStatus.RESERVED==this.status)) {
+            throw new IllegalStateException(
+                String.format("예약 상태가 RESERVED가 아닙니다. 현재: %s", this.status)
+            );
         }
-        this.status = InventoryReservationStatus.COMPLETED;
+
+        this.status = InventoryReservationStatus.CONFIRMED;
         this.orderId = orderId;
         this.completedAt = LocalDateTime.now();
     }
 
-    // 예약 취소
+    // 예약 취소(주문 실패시)
     public void cancel() {
-        if ((InventoryReservationStatus.COMPLETED==this.status)) {
-            throw new IllegalStateException("완료된 예약은 취소할 수 없습니다");
+        if (this.status != InventoryReservationStatus.RESERVED) {
+            throw new IllegalStateException(
+                    String.format("예약 상태가 RESERVED가 아닙니다. 현재: %s", this.status)
+            );
         }
         this.status = InventoryReservationStatus.CANCELLED;
+    }
+
+    // 예약 만료 (시간 초과 시)
+    public void expire() {
+        if (this.status != InventoryReservationStatus.RESERVED) {
+            throw new IllegalStateException(
+                    String.format("예약 상태가 RESERVED가 아닙니다. 현재: %s", this.status)
+            );
+        }
+
+        this.status = InventoryReservationStatus.EXPIRED;
     }
 
     // 예약 만료 체크
