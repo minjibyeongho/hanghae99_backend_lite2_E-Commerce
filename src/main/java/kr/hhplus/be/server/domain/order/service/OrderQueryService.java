@@ -2,8 +2,10 @@ package kr.hhplus.be.server.domain.order.service;
 
 import kr.hhplus.be.server.domain.order.model.Order;
 import kr.hhplus.be.server.domain.order.model.OrderItem;
-import kr.hhplus.be.server.domain.order.repository.OrderItemJpaRepository;
-import kr.hhplus.be.server.domain.order.repository.OrderJpaRepository;
+import kr.hhplus.be.server.domain.order.repository.OrderItemRepository;
+import kr.hhplus.be.server.domain.order.repository.OrderRepository;
+import kr.hhplus.be.server.infrastructure.order.repository.OrderItemJpaRepository;
+import kr.hhplus.be.server.infrastructure.order.repository.OrderJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +19,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class OrderQueryService {
 
-    private final OrderJpaRepository orderRepository;
-    private final OrderItemJpaRepository orderItemRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
     /**
      * 주문 상세 조회 (주문 + 주문 상품)
@@ -31,6 +33,7 @@ public class OrderQueryService {
 
         return OrderDetailResponse.of(order, orderItems);
     }
+
 
     /**
      * 사용자의 주문 목록 조회 (N+1 방지)

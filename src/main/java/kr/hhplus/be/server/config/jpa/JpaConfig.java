@@ -9,7 +9,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = "kr.hhplus.be.server")
+@EnableJpaRepositories(basePackages = {
+        "kr.hhplus.be.server.domain.*.repository",
+        "kr.hhplus.be.server.infrastructure.*.repository"
+})
 public class JpaConfig {
 
     @Bean

@@ -10,45 +10,29 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
-@Table(name = "order_delivery")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderDelivery {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long deliveryId;
-
-    @Column(nullable = false)
     private Long orderId;
-
     private String deliveryCompany;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private DeliveryStatus deliveryStatus;
-
     private String carrier;
-
     private String carrierPhone;
-
     private String address1;
-
     private String address2;
-
     private LocalDateTime expectedAt;
-
     private LocalDateTime deliveredAt;
-
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public OrderDelivery(Long orderId, String deliveryCompany, DeliveryStatus deliveryStatus,
-                         String carrier, String carrierPhone, String address1, String address2,
-                         LocalDateTime expectedAt) {
+    public OrderDelivery(
+        Long deliveryId,
+        Long orderId, String deliveryCompany, DeliveryStatus deliveryStatus,
+        String carrier, String carrierPhone, String address1, String address2,
+        LocalDateTime expectedAt, LocalDateTime deliveredAt, LocalDateTime createdAt
+    ) {
+        this.deliveryId = deliveryId;
         this.orderId = orderId;
         this.deliveryCompany = deliveryCompany;
         this.deliveryStatus = deliveryStatus;
@@ -57,11 +41,18 @@ public class OrderDelivery {
         this.address1 = address1;
         this.address2 = address2;
         this.expectedAt = expectedAt;
+        this.deliveredAt = deliveredAt;
+        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
     }
 
     // 배송 완료
     public void complete() {
         this.deliveryStatus = DeliveryStatus.DELIVERED;
         this.deliveredAt = LocalDateTime.now();
+    }
+
+    // 배송 완료 상태 확인
+    public boolean isDelivered() {
+        return DeliveryStatus.DELIVERED == this.deliveryStatus;
     }
 }

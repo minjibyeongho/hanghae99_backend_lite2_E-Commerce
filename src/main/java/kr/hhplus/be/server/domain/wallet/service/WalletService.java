@@ -2,8 +2,8 @@ package kr.hhplus.be.server.domain.wallet.service;
 
 import kr.hhplus.be.server.domain.wallet.model.Wallet;
 import kr.hhplus.be.server.domain.wallet.model.WalletHistory;
-import kr.hhplus.be.server.domain.wallet.repository.WalletHistoryJpaRepository;
-import kr.hhplus.be.server.domain.wallet.repository.WalletJpaRepository;
+import kr.hhplus.be.server.infrastructure.wallet.repository.WalletHistoryJpaRepository;
+import kr.hhplus.be.server.infrastructure.wallet.repository.WalletJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
