@@ -36,17 +36,22 @@ public class WalletHistory {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    // 멱등성 키 (UNIQUE 제약)
+    @Column(name = "idempotency_key", unique = true, length = 100)
+    private String idempotencyKey;
+
     // jpa 생성자
     protected WalletHistory() {};
 
     @Builder
     public WalletHistory(Long walletId, Integer amount, Integer beforeBalance,
-                         Integer afterBalance, WalletHistoryStatus status, String memo) {
+                         Integer afterBalance, WalletHistoryStatus status, String memo, String idempotencyKey) {
         this.walletId = walletId;
         this.amount = amount;
         this.beforeBalance = beforeBalance;
         this.afterBalance = afterBalance;
         this.status = status;
+        this.idempotencyKey = idempotencyKey;
         this.memo = memo;
     }
 

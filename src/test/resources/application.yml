@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: hhplus-test
+
+  # ============================================
+  # Testcontainers MySQL 설정
+  # ============================================
+  datasource:
+    # Testcontainers가 자동으로 MySQL 컨테이너를 실행하고 연결
+    url: jdbc:tc:mysql:8.0:///hhplus?TC_REUSABLE=true
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    # username, password는 Testcontainers가 자동 생성
+    hikari:
+      maximum-pool-size: 5  # 테스트는 약간 여유있게
+      connection-timeout: 10000
+      max-lifetime: 60000
+
+  # ============================================
+  # JPA 설정 (테스트 환경)
+  # ============================================
+  jpa:
+    open-in-view: false
+    generate-ddl: true  # ✅ DDL 생성 허용
+    show-sql: true      # ✅ 쿼리 로그 출력
+    hibernate:
+      ddl-auto: create-drop  # ✅ 테스트 시작 시 생성, 종료 시 삭제
+    properties:
+      hibernate:
+        format_sql: true  # 쿼리 포맷팅
+        use_sql_comments: true  # 쿼리에 주석 추가
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        timezone.default_storage: NORMALIZE_UTC
+        jdbc.time_zone: UTC
+
+  # ============================================
+  # SQL 초기화 설정
+  # ============================================
+  sql:
+    init:
+      mode: never  # ddl-auto가 create-drop이므로 불필요
+
+# ============================================
+# 로깅 설정 (테스트 시 상세 로그)
+# ============================================
+logging:
+  level:
+    root: INFO
+    kr.hhplus.be.server: DEBUG  # 프로젝트 패키지 로그
+    org.hibernate.SQL: DEBUG    # SQL 쿼리
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # 바인딩 파라미터
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+    org.testcontainers: INFO
+    com.zaxxer.hikari: INFO
