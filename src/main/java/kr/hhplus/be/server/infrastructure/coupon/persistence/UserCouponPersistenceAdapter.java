@@ -40,6 +40,29 @@ public class UserCouponPersistenceAdapter implements UserCouponPort {
     }
 
     @Override
+    public List<UserCoupon> findByCouponId(Long couponId) {
+        return userCouponJpaRepository.findByCouponId(couponId).stream()
+                .map(UserCouponJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(Long userCouponId) {
+        userCouponJpaRepository.deleteById(userCouponId);
+    }
+
+    @Override
+    public void deleteAll() {
+        userCouponJpaRepository.deleteAll();
+    }
+
+    @Override
+    public Optional<UserCoupon> findById(Long userCouponId) {
+        return userCouponJpaRepository.findById(userCouponId)
+                .map(UserCouponJpaEntity::toDomain);
+    }
+
+    @Override
     public UserCoupon save(UserCoupon userCoupon) {
         UserCouponJpaEntity entity = UserCouponJpaEntity.fromDomain(userCoupon);
         UserCouponJpaEntity saved = userCouponJpaRepository.save(entity);

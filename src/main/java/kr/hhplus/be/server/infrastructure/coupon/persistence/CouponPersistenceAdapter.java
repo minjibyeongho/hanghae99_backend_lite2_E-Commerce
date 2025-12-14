@@ -7,7 +7,9 @@ import kr.hhplus.be.server.infrastructure.coupon.repository.CouponJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -31,5 +33,23 @@ public class CouponPersistenceAdapter implements CouponPort {
         CouponJpaEntity entity = CouponJpaEntity.fromDomain(coupon);
         CouponJpaEntity saved = couponJpaRepository.save(entity);
         return saved.toDomain();
+    }
+
+    @Override
+    public List<Coupon> findAllActive() {
+        return couponJpaRepository.findAllActive()
+                .stream()
+                .map(CouponJpaEntity::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(Long couponId) {
+        couponJpaRepository.deleteById(couponId);
+    }
+
+    @Override
+    public void deleteAll() {
+        couponJpaRepository.deleteAll();
     }
 }
