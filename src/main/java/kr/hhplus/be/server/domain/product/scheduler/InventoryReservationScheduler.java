@@ -11,8 +11,8 @@ public class InventoryReservationScheduler {
 
     private final InventoryService inventoryService;
 
-    // 1분마다 만료된 예약 정리
-    @Scheduled(fixedRate = 60000)  // 60초
+    // 10분마다 만료된 예약 정리
+    @Scheduled(fixedRate = 600000)  // 600초
     public void expireReservations() {
         try {
             int expiredCount = inventoryService.expireReservations();

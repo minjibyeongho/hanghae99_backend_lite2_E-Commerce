@@ -36,10 +36,37 @@ public class UserCouponJpaEntity {
     private CouponStatus status;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * 발급 시간
+     */
+    @Column(nullable = false)
+    private LocalDateTime issuedAt;
+
+    /**
+     * 사용 시간
+     */
+    @Column(name = "used_at")
+    private LocalDateTime usedAt;
+
+    /**
+     * 만료 시간
+     */
+    @Column(name = "expire_at", nullable = false)
+    private LocalDateTime expireAt;
+
+    /**
+     * 수정 시간
+     */
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     // JPA Entity → Domain Model 변환
+    /**
+     * JPA Entity → Domain Model 변환
+     */
     public UserCoupon toDomain() {
         return UserCoupon.builder()
                 .userCouponId(this.userCouponId)
@@ -47,11 +74,17 @@ public class UserCouponJpaEntity {
                 .couponId(this.couponId)
                 .orderId(this.orderId)
                 .status(this.status)
+                .issuedAt(this.issuedAt)
+                .usedAt(this.usedAt)
+                .expireAt(this.expireAt)
                 .createdAt(this.createdAt)
+                .updatedAt(this.updatedAt)
                 .build();
     }
 
-    // Domain Model → JPA Entity 변환
+    /**
+     * Domain Model → JPA Entity 변환
+     */
     public static UserCouponJpaEntity fromDomain(UserCoupon userCoupon) {
         return new UserCouponJpaEntity(
                 userCoupon.getUserCouponId(),
@@ -59,7 +92,20 @@ public class UserCouponJpaEntity {
                 userCoupon.getCouponId(),
                 userCoupon.getOrderId(),
                 userCoupon.getStatus(),
-                userCoupon.getCreatedAt()
+                userCoupon.getCreatedAt(),
+                userCoupon.getIssuedAt(),
+                userCoupon.getUsedAt(),
+                userCoupon.getExpireAt(),
+                userCoupon.getUpdatedAt()
         );
+    }
+
+    // ============================================
+    // JPA 생명주기 콜백
+    // ============================================
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
