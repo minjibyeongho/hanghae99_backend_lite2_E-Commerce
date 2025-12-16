@@ -1,0 +1,205 @@
+src/
+├── main
+│   ├── java
+│   │   └── kr
+│   │       └── hhplus
+│   │           └── be
+│   │               └── server
+│   │                   ├── ServerApplication.java
+│   │                   ├── common
+│   │                   │   └── status
+│   │                   │       ├── CouponStatus.java
+│   │                   │       ├── DeliveryStatus.java
+│   │                   │       ├── InventoryHistoryStatus.java
+│   │                   │       ├── InventoryReservationStatus.java
+│   │                   │       ├── OrderStatus.java
+│   │                   │       ├── PaymentMethod.java
+│   │                   │       ├── PaymentStatus.java
+│   │                   │       ├── ReservationType.java
+│   │                   │       └── WalletHistoryStatus.java
+│   │                   ├── config
+│   │                   │   └── jpa
+│   │                   │       └── JpaConfig.java
+│   │                   ├── domain
+│   │                   │   ├── coupon
+│   │                   │   │   ├── adapter
+│   │                   │   │   │   ├── in
+│   │                   │   │   │   │   └── web
+│   │                   │   │   │   │       ├── CouponController.java
+│   │                   │   │   │   │       └── dto
+│   │                   │   │   │   │           ├── CouponResponse.java
+│   │                   │   │   │   │           ├── IssueCouponRequest.java
+│   │                   │   │   │   │           └── UserCouponResponse.java
+│   │                   │   │   │   └── out
+│   │                   │   │   ├── config
+│   │                   │   │   │   └── CouponConfig.java
+│   │                   │   │   └── core
+│   │                   │   │       ├── domain
+│   │                   │   │       │   ├── Coupon.java
+│   │                   │   │       │   └── UserCoupon.java
+│   │                   │   │       ├── facade
+│   │                   │   │       │   └── CouponIssueFacade.java
+│   │                   │   │       ├── port
+│   │                   │   │       │   ├── in
+│   │                   │   │       │   │   ├── GetMyCouponsQuery.java
+│   │                   │   │       │   │   ├── IssueCouponCommand.java
+│   │                   │   │       │   │   └── UseCouponCommand.java
+│   │                   │   │       │   └── out
+│   │                   │   │       │       ├── CouponPort.java
+│   │                   │   │       │       └── UserCouponPort.java
+│   │                   │   │       └── usecase
+│   │                   │   │           ├── GetMyCouponsUseCase.java
+│   │                   │   │           ├── IssueCouponUseCase.java
+│   │                   │   │           └── UseCouponUseCase.java
+│   │                   │   ├── order
+│   │                   │   │   ├── OrderController.java
+│   │                   │   │   ├── model
+│   │                   │   │   │   ├── Order.java
+│   │                   │   │   │   ├── OrderDelivery.java
+│   │                   │   │   │   └── OrderItem.java
+│   │                   │   │   ├── repository
+│   │                   │   │   │   ├── OrderItemRepository.java
+│   │                   │   │   │   └── OrderRepository.java
+│   │                   │   │   ├── service
+│   │                   │   │   │   ├── OrderQueryService.java
+│   │                   │   │   │   └── OrderService.java
+│   │                   │   │   └── vo
+│   │                   │   │       ├── OrderItem.java
+│   │                   │   │       └── OrderRequest.java
+│   │                   │   ├── payment
+│   │                   │   │   ├── model
+│   │                   │   │   │   └── Payment.java
+│   │                   │   │   ├── service
+│   │                   │   │   └── vo
+│   │                   │   ├── product
+│   │                   │   │   ├── ProductController.java
+│   │                   │   │   ├── model
+│   │                   │   │   │   ├── Category.java
+│   │                   │   │   │   ├── Inventory.java
+│   │                   │   │   │   ├── InventoryHistory.java
+│   │                   │   │   │   ├── InventoryReservation.java
+│   │                   │   │   │   └── Product.java
+│   │                   │   │   ├── scheduler
+│   │                   │   │   │   └── InventoryReservationScheduler.java
+│   │                   │   │   ├── service
+│   │                   │   │   │   ├── InventoryService.java
+│   │                   │   │   │   └── ProductService.java
+│   │                   │   │   └── vo
+│   │                   │   ├── sale
+│   │                   │   │   ├── SaleController.java
+│   │                   │   │   ├── model
+│   │                   │   │   │   └── Sale.java
+│   │                   │   │   ├── service
+│   │                   │   │   │   └── SaleService.java
+│   │                   │   │   └── vo
+│   │                   │   ├── user
+│   │                   │   │   ├── controller
+│   │                   │   │   │   └── UserController.java
+│   │                   │   │   ├── model
+│   │                   │   │   │   └── User.java
+│   │                   │   │   ├── service
+│   │                   │   │   │   └── UserService.java
+│   │                   │   │   └── vo
+│   │                   │   └── wallet
+│   │                   │       ├── WalletController.java
+│   │                   │       ├── model
+│   │                   │       │   ├── Wallet.java
+│   │                   │       │   └── WalletHistory.java
+│   │                   │       ├── service
+│   │                   │       │   └── WalletService.java
+│   │                   │       └── vo
+│   │                   ├── external
+│   │                   │   ├── AsyncConfig.java
+│   │                   │   └── DataPlatformClient.java
+│   │                   └── infrastructure
+│   │                       ├── coupon
+│   │                       │   ├── entity
+│   │                       │   │   ├── CouponJpaEntity.java
+│   │                       │   │   └── UserCouponJpaEntity.java
+│   │                       │   ├── persistence
+│   │                       │   │   ├── CouponPersistenceAdapter.java
+│   │                       │   │   └── UserCouponPersistenceAdapter.java
+│   │                       │   └── repository
+│   │                       │       ├── CouponJpaRepository.java
+│   │                       │       └── UserCouponJpaRepository.java
+│   │                       ├── external
+│   │                       │   └── client
+│   │                       ├── order
+│   │                       │   ├── entity
+│   │                       │   │   ├── OrderDeliveryJpaEntity.java
+│   │                       │   │   ├── OrderItemJpaEntity.java
+│   │                       │   │   └── OrderJpaEntity.java
+│   │                       │   ├── mapper
+│   │                       │   │   ├── OrderDeliveryMapper.java
+│   │                       │   │   ├── OrderItemMapper.java
+│   │                       │   │   └── OrderMapper.java
+│   │                       │   └── repository
+│   │                       │       ├── OrderItemJpaRepository.java
+│   │                       │       ├── OrderItemRepositoryImpl.java
+│   │                       │       ├── OrderJpaRepository.java
+│   │                       │       └── OrderRepositoryImpl.java
+│   │                       ├── payment
+│   │                       │   ├── entity
+│   │                       │   └── repository
+│   │                       │       └── PaymentJpaRepository.java
+│   │                       ├── product
+│   │                       │   ├── entity
+│   │                       │   └── repository
+│   │                       │       ├── InventoryJpaRepository.java
+│   │                       │       ├── InventoryReservationJpaRepository.java
+│   │                       │       └── ProductJpaRepository.java
+│   │                       ├── sale
+│   │                       │   ├── entity
+│   │                       │   └── repository
+│   │                       │       └── SaleJpaRepository.java
+│   │                       ├── user
+│   │                       │   ├── entity
+│   │                       │   └── repository
+│   │                       │       └── UserJpaRepository.java
+│   │                       └── wallet
+│   │                           ├── entity
+│   │                           └── repository
+│   │                               ├── WalletHistoryJpaRepository.java
+│   │                               └── WalletJpaRepository.java
+│   └── resources
+│       └── application.yml
+└── test
+    ├── java
+    │   └── kr
+    │       └── hhplus
+    │           └── be
+    │               └── server
+    │                   ├── ServerApplicationTests.java
+    │                   ├── TestcontainersConfiguration.java
+    │                   ├── application
+    │                   │   └── coupon
+    │                   │       └── CouponIntegrationTest.java
+    │                   ├── common
+    │                   │   └── TestContainersConfiguration.java
+    │                   ├── config
+    │                   ├── domain
+    │                   │   ├── coupon
+    │                   │   │   ├── CouponIssueFacadeTest.java
+    │                   │   │   ├── CouponTest.java
+    │                   │   │   └── UserCouponTest.java
+    │                   │   ├── inventory
+    │                   │   ├── order
+    │                   │   ├── product
+    │                   │   │   └── InventoryTest.java
+    │                   │   ├── sale
+    │                   │   └── wallet
+    │                   │       ├── entity
+    │                   │       │   ├── WalletEntityTest.java
+    │                   │       │   └── WalletHistoryEntityTest.java
+    │                   │       ├── repository
+    │                   │       │   ├── WalletHistoryRepositoryTest.java
+    │                   │       │   └── WalletRepositoryTest.java
+    │                   │       └── service
+    │                   │           ├── WalletServiceIntegrationTest.java
+    │                   │           └── WalletServiceTest.java
+    │                   └── infrastructure
+    │                       └── coupon
+    └── resources
+        └── application-test.yml
+
+104 directories, 99 files

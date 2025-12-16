@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
+
 @Service
 @RequiredArgsConstructor
 public class CouponIssueFacade {
@@ -64,12 +65,12 @@ public class CouponIssueFacade {
                 // ============================================
                 if (retryCount > 0) {
                     System.out.println(
-                            String.format("✅ 쿠폰 발급 성공 (재시도 {}회 후): userId={}, couponId={}",
+                            String.format("쿠폰 발급 성공 (재시도 %d회 후): userId=%s, couponId=%s",
                                     retryCount, command.userId(), command.couponId())
                     );
                 } else {
                     System.out.println(
-                            String.format("✅ 쿠폰 발급 성공 (첫 시도): userId={}, couponId={}",
+                            String.format("쿠폰 발급 성공 (첫 시도): userId=%s, couponId=%s",
                                     command.userId(), command.couponId())
                     );
                 }
@@ -82,14 +83,14 @@ public class CouponIssueFacade {
                 // ============================================
                 retryCount++;
                 System.out.println(
-                        String.format("⚠️ 낙관적 락 충돌 (재시도 {}/{}): userId={}, couponId={}, error={}",
+                        String.format("!!낙관적 락 충돌 (재시도 %d/%d): userId=%s, couponId=%s, error=%s",
                                 retryCount, MAX_RETRY, command.userId(), command.couponId(), e.getMessage())
                 );
 
                 // 최대 재시도 횟수 초과
                 if (retryCount >= MAX_RETRY) {
                     System.out.println(
-                            String.format("❌ 최대 재시도 횟수 초과: userId={}, couponId={}, retryCount={}",
+                            String.format("최대 재시도 횟수 초과: userId=%s, couponId=%s, retryCount=%d",
                                     command.userId(), command.couponId(), retryCount)
                     );
 
@@ -107,14 +108,14 @@ public class CouponIssueFacade {
                 long delay = calculateBackoff(retryCount);
 
                 System.out.println(
-                        String.format("⏳ {}ms 대기 후 재시도...", delay)
+                        String.format("%dms 대기 후 재시도...", delay)
                 );
                 try {
                     Thread.sleep(delay);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     System.out.println(
-                            String.format("❌ 재시도 중단됨: userId={}, couponId={}",
+                            String.format("❌ 재시도 중단됨: userId=%s, couponId=%s",
                                     command.userId(), command.couponId())
                     );
                     throw new IllegalStateException("쿠폰 발급이 중단되었습니다", ie);
@@ -125,7 +126,7 @@ public class CouponIssueFacade {
                 // 비즈니스 예외 → 즉시 실패 (재시도 안 함)
                 // ============================================
                 System.out.println(
-                        String.format("❌ 비즈니스 예외 발생 (재시도 {}회 후): userId={}, couponId={}, error={}",
+                        String.format("비즈니스 예외 발생 (재시도 %d회 후): userId=%s, couponId=%s, error=%s",
                                 retryCount, command.userId(), command.couponId(), e.getMessage())
                 );
 

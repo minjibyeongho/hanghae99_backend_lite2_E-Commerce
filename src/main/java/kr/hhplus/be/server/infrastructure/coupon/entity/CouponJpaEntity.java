@@ -164,13 +164,6 @@ public class CouponJpaEntity {
     // JPA Entity → Domain Model 변환
     public Coupon toDomain() {
         return Coupon.builder()
-//                .couponId(this.couponId)
-//                .couponName(this.couponName)
-//                .createdAt(this.createdAt)
-//                .expiredAt(this.expiredAt)
-//                .quantity(this.quantity)
-//                .discountAmount(this.discountAmount)
-//                .discountRate(this.discountRate)
                 .couponId(this.couponId)
                 .couponName(this.couponName)
                 .totalQuantity(this.totalQuantity)

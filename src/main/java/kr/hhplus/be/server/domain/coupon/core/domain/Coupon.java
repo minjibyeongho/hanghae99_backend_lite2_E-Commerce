@@ -22,12 +22,6 @@ public class Coupon {
     private final LocalDateTime startAt;
     private final LocalDateTime updatedAt;
 
-    /*
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(this.expiredAt);
-    }
-     */
-
     public Integer calculateDiscount(Integer totalAmount) {
         if (this.discountAmount != null) {
             return this.discountAmount;
