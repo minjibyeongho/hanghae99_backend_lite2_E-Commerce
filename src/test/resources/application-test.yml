@@ -39,6 +39,26 @@ spring:
     init:
       mode: never  # ddl-auto가 create-drop이므로 불필요
 
+  # ============================================
+  # Redis 설정
+  # ============================================
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1000ms
+      lettuce:
+        pool:
+          max-active: 5
+          max-idle: 5
+          min-idle: 1
+
+    cache:
+      type: redis
+      redis:
+        time-to-live: 60000  # 테스트용 짧은 TTL (1분)
+        cache-null-values: false
+
 # ============================================
 # 로깅 설정 (테스트 시 상세 로그)
 # ============================================

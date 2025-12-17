@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import kr.hhplus.be.server.common.status.WalletHistoryStatus;
 import kr.hhplus.be.server.domain.wallet.model.Wallet;
 import kr.hhplus.be.server.domain.wallet.model.WalletHistory;
+import kr.hhplus.be.server.infrastructure.lock.SpinLockManager;
 import kr.hhplus.be.server.infrastructure.wallet.repository.WalletHistoryJpaRepository;
 import kr.hhplus.be.server.infrastructure.wallet.repository.WalletJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,21 @@ public class WalletService {
 
     private final WalletJpaRepository walletRepository;
     private final WalletHistoryJpaRepository walletHistoryRepository;
+    private final SpinLockManager spinLockManager;
     // ✅ 변경: @PersistenceContext로 주입
     @PersistenceContext
     private final EntityManager entityManager; // ✅ 추가
 
+    // ============================================
+    // 분산락 설정
+    // ============================================
+    private static final long LOCK_WAIT_TIME_MS = 5000;  // 5초
+    private static final long LOCK_LEASE_TIME_MS = 3000; // 3초
+
     // 잔액 충전
     @Transactional
     public WalletChargeResponse charge(Long userId, Integer amount) {
+/*
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
 
@@ -37,6 +46,31 @@ public class WalletService {
         // 이력 저장
         WalletHistory history = WalletHistory.createChargeHistory(wallet, amount, beforeBalance);
         walletHistoryRepository.save(history);
+        return new WalletChargeResponse(wallet.getWalletId(), wallet.getBalance());
+*/
+        String lockKey = String.format("wallet:%d:balance", userId);
+
+        return spinLockManager.executeWithSpinLock(
+                lockKey,
+                LOCK_WAIT_TIME_MS,
+                LOCK_LEASE_TIME_MS,
+                () -> chargeInternal(userId, amount)
+        );
+    }
+
+    /**
+     * 충전 내부 로직 (DB 트랜잭션)
+     */
+    private WalletChargeResponse chargeInternal(Long userId, Integer amount) {
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
+
+        Integer beforeBalance = wallet.getBalance();
+        wallet.addAmount(amount);
+
+        WalletHistory history = WalletHistory.createChargeHistory(wallet, amount, beforeBalance);
+        walletHistoryRepository.save(history);
+
         return new WalletChargeResponse(wallet.getWalletId(), wallet.getBalance());
     }
 
@@ -59,7 +93,7 @@ public class WalletService {
         WalletHistory history = WalletHistory.createPaymentHistory(wallet, amount, beforeBalance);
         return walletHistoryRepository.save(history);
     }
-
+/*
     @Transactional
     public WalletHistory processPaymentWithIdempotency(
             Long userId,
@@ -111,19 +145,6 @@ public class WalletService {
         }
 
         // 5. 이력 기록 시 멱등성 키 저장
-/*
-        WalletHistory history = WalletHistory.builder()
-                .walletId(wallet.getWalletId())
-                .amount(-amount)
-                .beforeBalance(beforeBalance)
-                .afterBalance(beforeBalance - amount)
-                .status(WalletHistoryStatus.PAYMENT)
-                .memo("주문 결제")
-                .idempotencyKey(idempotencyKey)  // 멱등성 키 저장
-                .build();
-
-        return walletHistoryRepository.save(history);
-*/
         try {
             WalletHistory history = WalletHistory.builder()
                     .walletId(wallet.getWalletId())
@@ -157,6 +178,91 @@ public class WalletService {
             return walletHistoryRepository.findByIdempotencyKey(idempotencyKey)
                     .orElseThrow(() -> new IllegalStateException(
                             "중복 키 오류 발생 후 이력을 찾을 수 없습니다."));
+        }
+    }
+*/
+    /**
+     * 결제 처리 (Spin Lock 적용 + 멱등성)
+     */
+    @Transactional
+    public WalletHistory processPaymentWithIdempotency(Long userId, Integer amount, String idempotencyKey) {
+        String lockKey = String.format("wallet:%d:balance", userId);
+
+        return spinLockManager.executeWithSpinLock(
+                lockKey,
+                LOCK_WAIT_TIME_MS,
+                LOCK_LEASE_TIME_MS,
+                () -> processPaymentInternal(userId, amount, idempotencyKey)
+        );
+    }
+
+    /**
+     * 결제 내부 로직 (DB 트랜잭션 + 멱등성)
+     */
+    private WalletHistory processPaymentInternal(Long userId, Integer amount, String idempotencyKey) {
+        // 1. 멱등성 체크
+        Optional<WalletHistory> existing = walletHistoryRepository.findByIdempotencyKey(idempotencyKey);
+        if (existing.isPresent()) {
+            System.out.println(String.format("✅ 멱등성 키 존재 (idempotencyKey=%s)", idempotencyKey));
+            return existing.get();
+        }
+
+        // 2. 지갑 조회
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
+
+        Integer beforeBalance = wallet.getBalance();
+
+        // 3. 잔액 확인
+        if (wallet.getBalance() < amount) {
+            throw new IllegalStateException(String.format(
+                    "잔액이 부족합니다. (잔액: %d, 요청: %d)", wallet.getBalance(), amount));
+        }
+
+        // 4. 조건부 UPDATE (Atomic)
+        int updated = walletRepository.deductBalanceIfSufficient(userId, amount);
+
+        if (updated == 0) {
+            wallet = walletRepository.findByUserId(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("지갑을 찾을 수 없습니다."));
+
+            if (wallet.getBalance() < amount) {
+                throw new IllegalStateException(String.format(
+                        "잔액이 부족합니다. (잔액: %d, 요청: %d)", wallet.getBalance(), amount));
+            } else {
+                throw new IllegalStateException("결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+            }
+        }
+
+        // 5. WalletHistory 저장 (UNIQUE 제약 처리)
+        try {
+            WalletHistory history = WalletHistory.builder()
+                    .walletId(wallet.getWalletId())
+                    .amount(-amount)
+                    .beforeBalance(beforeBalance)
+                    .afterBalance(beforeBalance - amount)
+                    .status(WalletHistoryStatus.PAYMENT)
+                    .memo("결제")
+                    .idempotencyKey(idempotencyKey)
+                    .build();
+
+            WalletHistory saved = walletHistoryRepository.save(history);
+            entityManager.flush();
+
+            System.out.println(String.format(
+                    "✅ 결제 성공 (idempotencyKey=%s, walletHisId=%d)",
+                    idempotencyKey, saved.getWalletHisId()));
+
+            return saved;
+
+        } catch (DataIntegrityViolationException e) {
+            entityManager.clear();
+
+            System.out.println(String.format(
+                    "⚠️ UNIQUE 제약 위반, 기존 데이터 조회 (idempotencyKey=%s)", idempotencyKey));
+
+            return walletHistoryRepository.findByIdempotencyKey(idempotencyKey)
+                    .orElseThrow(() -> new IllegalStateException("멱등성 키 조회 실패. 시스템 오류입니다."));
         }
     }
 
