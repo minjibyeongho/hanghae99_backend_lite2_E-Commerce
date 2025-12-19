@@ -11,7 +11,7 @@ spring:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     # username, password는 Testcontainers가 자동 생성
     hikari:
-      maximum-pool-size: 5  # 테스트는 약간 여유있게
+      maximum-pool-size: 20  # 테스트는 약간 여유있게
       connection-timeout: 10000
       max-lifetime: 60000
 

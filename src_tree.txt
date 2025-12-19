@@ -18,8 +18,10 @@ src/
 │   │                   │       ├── ReservationType.java
 │   │                   │       └── WalletHistoryStatus.java
 │   │                   ├── config
-│   │                   │   └── jpa
-│   │                   │       └── JpaConfig.java
+│   │                   │   ├── jpa
+│   │                   │   │   └── JpaConfig.java
+│   │                   │   └── redis
+│   │                   │       └── RedisConfig.java
 │   │                   ├── domain
 │   │                   │   ├── coupon
 │   │                   │   │   ├── adapter
@@ -124,6 +126,9 @@ src/
 │   │                       │       └── UserCouponJpaRepository.java
 │   │                       ├── external
 │   │                       │   └── client
+│   │                       ├── lock
+│   │                       │   ├── RedisSpinLockManager.java
+│   │                       │   └── SpinLockManager.java
 │   │                       ├── order
 │   │                       │   ├── entity
 │   │                       │   │   ├── OrderDeliveryJpaEntity.java
@@ -195,6 +200,7 @@ src/
     │                   │       │   ├── WalletHistoryRepositoryTest.java
     │                   │       │   └── WalletRepositoryTest.java
     │                   │       └── service
+    │                   │           ├── WalletServiceDistributedLockTest.java
     │                   │           ├── WalletServiceIntegrationTest.java
     │                   │           └── WalletServiceTest.java
     │                   └── infrastructure
@@ -202,4 +208,4 @@ src/
     └── resources
         └── application-test.yml
 
-104 directories, 99 files
+106 directories, 103 files
