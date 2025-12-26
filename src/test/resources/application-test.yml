@@ -11,7 +11,7 @@ spring:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     # username, password는 Testcontainers가 자동 생성
     hikari:
-      maximum-pool-size: 5  # 테스트는 약간 여유있게
+      maximum-pool-size: 20  # 테스트는 약간 여유있게
       connection-timeout: 10000
       max-lifetime: 60000
 
@@ -38,6 +38,26 @@ spring:
   sql:
     init:
       mode: never  # ddl-auto가 create-drop이므로 불필요
+
+  # ============================================
+  # Redis 설정
+  # ============================================
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 1000ms
+      lettuce:
+        pool:
+          max-active: 5
+          max-idle: 5
+          min-idle: 1
+
+    cache:
+      type: redis
+      redis:
+        time-to-live: 60000  # 테스트용 짧은 TTL (1분)
+        cache-null-values: false
 
 # ============================================
 # 로깅 설정 (테스트 시 상세 로그)

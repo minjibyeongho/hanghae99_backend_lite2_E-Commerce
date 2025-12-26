@@ -2,9 +2,11 @@ package kr.hhplus.be.server.domain.product.service;
 
 import kr.hhplus.be.server.domain.product.model.Inventory;
 import kr.hhplus.be.server.domain.product.model.Product;
+import kr.hhplus.be.server.domain.product.vo.ProductDetailResponse;
 import kr.hhplus.be.server.infrastructure.product.repository.InventoryJpaRepository;
 import kr.hhplus.be.server.infrastructure.product.repository.ProductJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class ProductService {
     /**
      * 단일 상품 조회 (ID, 이름, 가격, 잔여수량)
      */
+    @Cacheable(value = "productDetail", key = "#productId")  // ✅ 캐싱 적용 (5분)
     public ProductDetailResponse getProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다"));
@@ -57,12 +60,4 @@ public class ProductService {
                 })
                 .collect(Collectors.toList());
     }
-
-    // Response DTO
-    public record ProductDetailResponse(
-            Long productId,
-            String productName,
-            Integer price,
-            Integer availableQuantity
-    ) {}
 }

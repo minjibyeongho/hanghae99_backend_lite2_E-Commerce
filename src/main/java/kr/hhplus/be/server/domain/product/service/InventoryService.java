@@ -4,10 +4,14 @@ import kr.hhplus.be.server.common.status.InventoryReservationStatus;
 import kr.hhplus.be.server.common.status.ReservationType;
 import kr.hhplus.be.server.domain.product.model.Inventory;
 import kr.hhplus.be.server.domain.product.model.InventoryReservation;
+import kr.hhplus.be.server.infrastructure.lock.SimpleLockManager;
 import kr.hhplus.be.server.infrastructure.product.repository.InventoryJpaRepository;
 import kr.hhplus.be.server.infrastructure.product.repository.InventoryReservationJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -16,14 +20,19 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class InventoryService {
     private final InventoryJpaRepository inventoryRepository;
     private final InventoryReservationJpaRepository reservationRepository;
+    private final SimpleLockManager simpleLockManager;
+    private final ObjectProvider<InventoryService> selfProvider;  // ✅ ObjectProvider 사용  // ✅ 자기 자신 주입 (프록시)
+
+    private static final long LOCK_WAIT_TIME_MS = 5000;
+    private static final long LOCK_LEASE_TIME_MS = 5000;
 
     /**
-     * 재고 예약
+     * 재고 예약-1, 비관적 락 적용
      */
+/*
     @Transactional
     public List<InventoryReservation> reserveInventory(Long userId, List<ReserveRequest> requests) {
         List<InventoryReservation> reservations = new ArrayList<>();
@@ -32,15 +41,6 @@ public class InventoryService {
             // 비관적 락으로 재고 조회(타 트랜잭션 대기)
             Inventory inventory = inventoryRepository.findByProductIdWithLock(request.productId())
                     .orElseThrow(() -> new IllegalArgumentException("재고 정보를 찾을 수 없습니다: 상품 ID " + request.productId()));
-
-            /*
-                JPA Entity로 이관
-            // 재고 부족 체크
-            if (inventory.getAvailableQuantity() < request.quantity()) {
-                throw new IllegalStateException("재고가 부족합니다: 상품 ID " + request.productId()
-                        + " (요청: " + request.quantity() + ", 재고: " + inventory.getAvailableQuantity() + ")");
-            }
-             */
 
             // 재고 예약(실재고 감소, 예약재고 증가)
             inventory.reserve(request.quantity());
@@ -60,49 +60,148 @@ public class InventoryService {
 
         return reservations;
     }
+*/
 
     /**
-     * 예약 확정
+     * 재고 예약 - 심플락 적용(분산락 단원)
      */
     @Transactional
+    @CacheEvict(value = "productDetail", key = "#request.productId", beforeInvocation = false)
+    public List<InventoryReservation> reserveInventory(Long userId, List<ReserveRequest> requests) {
+        List<InventoryReservation> reservations = new ArrayList<>();
+
+        for (ReserveRequest request : requests) {
+            String lockKey = String.format("inventory:%d:modify", request.productId());
+
+            // ✅ Simple Lock 적용
+            InventoryReservation reservation = simpleLockManager.executeWithSimpleLock(
+                    lockKey,
+                    LOCK_WAIT_TIME_MS,
+                    LOCK_LEASE_TIME_MS,
+                    () -> selfProvider.getObject().reserveInventoryInternal(userId, request)
+            );
+
+            reservations.add(reservation);
+        }
+
+        return reservations;
+    }
+
+    // ✅ 내부 로직 분리
+    @Transactional(propagation = Propagation.REQUIRES_NEW)  // ✅ 새로운 트랜잭션
+    public InventoryReservation reserveInventoryInternal(Long userId, ReserveRequest request) {
+
+        // 재고 조회
+        Inventory inventory = inventoryRepository.findByProductId(request.productId())
+                .orElseThrow(() -> new IllegalArgumentException("재고 정보를 찾을 수 없습니다: 상품 ID " + request.productId()));
+
+        // 2. 재고 검증
+        if (inventory.getAvailableQuantity() < request.quantity()) {
+            throw new IllegalStateException(String.format(
+                    "재고가 부족합니다. 상품 ID: %d, 요청 수량: %d, 가용 재고: %d",
+                    request.productId(), request.quantity(), inventory.getAvailableQuantity()
+            ));
+        }
+
+        // 재고 예약(실재고 감소, 예약재고 증가)
+        inventory.reserve(request.quantity());
+        inventoryRepository.save(inventory);
+
+        // 임시 예약 생성
+        InventoryReservation reservation = InventoryReservation.builder()
+                .productId(request.productId())
+                .userId(userId)
+                .quantity(request.quantity())
+                .status(InventoryReservationStatus.RESERVED)
+                .reservationType(ReservationType.ORDER)
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .build();
+
+        reservationRepository.save(reservation);
+        return reservation;
+    }
+
+    /**
+     * 예약 확정 - 심플락 적용
+     */
+    @Transactional
+    @CacheEvict(value = "productDetail", key = "#reservation.productId", beforeInvocation = false)
     public void confirmReservations(List<InventoryReservation> reservations, Long orderId) {
         for (InventoryReservation reservation : reservations) {
-            // 비관적 락으로 조회
-            Inventory inventory = inventoryRepository.findByProductId(reservation.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("재고 정보를 찾을 수 없습니다"));
+            String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
 
-            // 재고 확정 처리
-            inventory.confirmReservation(reservation.getQuantity());
-
-            // 예약 확정(실재고 감소, 예약재고 감소)
-            reservation.confirm(orderId);
-            reservationRepository.save(reservation);
+            simpleLockManager.executeWithSimpleLock(
+                    lockKey,
+                    LOCK_WAIT_TIME_MS,
+                    LOCK_LEASE_TIME_MS,
+                    () -> {
+                        selfProvider.getObject().confirmReservationInternal(reservation, orderId);
+                        return null;
+                    }
+            );
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void confirmReservationInternal(InventoryReservation reservation, Long orderId) {
+        Inventory inventory = inventoryRepository.findByProductId(reservation.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("재고를 찾을 수 없습니다. 상품 ID: %d", reservation.getProductId())
+                ));
+
+        // 재고 확정 처리(예약 재고 → 실제 재고 차감)
+        inventory.confirmReservation(reservation.getQuantity());
+        inventoryRepository.save(inventory);
+
+        // 예약 확정(실재고 감소, 예약재고 감소)
+        reservation.confirm(orderId);
+        reservationRepository.save(reservation);
+    }
+
     /**
-     *  예약 취소 (비관적 락) - 주문 실패, 결제 실패 시
+     *  예약 취소(심플락 적용) - 주문 실패, 결제 실패 시
      */
     @Transactional
+    @CacheEvict(value = "productDetail", key = "#reservation.productId", beforeInvocation = false)
     public void cancelReservations(List<InventoryReservation> reservations) {
         for (InventoryReservation reservation : reservations) {
+            String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
 
-            // 비관적 락으로 조회
-            Inventory inventory = inventoryRepository
-                    .findByProductIdWithLock(reservation.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("재고를 찾을 수 없습니다"));
-
-            // 예약 취소 (reserved_quantity 감소, available_quantity 증가)
-            inventory.cancelReservation(reservation.getQuantity());
-
-            // 예약 상태 업데이트
-            reservation.cancel();
-            reservationRepository.save(reservation);
+            simpleLockManager.executeWithSimpleLock(
+                    lockKey,
+                    LOCK_WAIT_TIME_MS,
+                    LOCK_LEASE_TIME_MS,
+                    () -> {
+                        selfProvider.getObject().cancelReservationInternal(reservation);
+                        return null;
+                    }
+            );
         }
     }
 
     /**
-     * 4. 만료된 예약 정리 (스케줄러에서 호출)
+     * 예약 취소 내부 로직
+     * @param reservation
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void cancelReservationInternal(InventoryReservation reservation) {
+        Inventory inventory = inventoryRepository
+                .findByProductId(reservation.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("재고를 찾을 수 없습니다. 상품 ID: %d", reservation.getProductId())
+                ));
+
+        // 예약 취소 (reserved_quantity 감소, available_quantity 증가)
+        inventory.cancelReservation(reservation.getQuantity());
+        inventoryRepository.save(inventory);
+
+        // 예약 상태 업데이트
+        reservation.cancel();
+        reservationRepository.save(reservation);
+    }
+
+    /**
+     * 4. 만료된 예약 정리 (스케줄러에서 호출) - 심플락 적용
      */
     @Transactional
     public int expireReservations() {
@@ -113,24 +212,28 @@ public class InventoryService {
         int count = 0;
         for (InventoryReservation reservation : expiredReservations) {
             try {
-                // 비관적 락으로 조회
-                Inventory inventory = inventoryRepository
-                        .findByProductIdWithLock(reservation.getProductId())
-                        .orElseThrow(() -> new IllegalArgumentException("재고를 찾을 수 없습니다"));
-
-                // 예약 취소 (재고 복구)
-                inventory.cancelReservation(reservation.getQuantity());
-
-                // 예약 만료 처리
-                reservation.expire();
-                reservationRepository.save(reservation);
-
+                // 각 상품별로 캐시 무효화
+                expireReservation(reservation);
                 count++;
+/*
+                String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
+
+                simpleLockManager.executeWithSimpleLock(
+                        lockKey,
+                        LOCK_WAIT_TIME_MS,
+                        LOCK_LEASE_TIME_MS,
+                        () -> {
+                            selfProvider.getObject().expireReservationInternal(reservation);
+                            return null;
+                        }
+                );
+*/
 
             } catch (Exception e) {
-                throw new IllegalArgumentException(
-                    String.format("예약 만료 처리 실패: reservationId={}", reservation.getReservationId())
-                );
+                throw new IllegalArgumentException(String.format(
+                        "예약 만료 처리 실패. reservationId: %d, error: %s",
+                        reservation.getReservationId(), e.getMessage()
+                ));
             }
         }
 
@@ -138,14 +241,77 @@ public class InventoryService {
     }
 
     /**
-     *  5. 재고 추가 (입고)
+     * 단일 예약 만료 처리 (캐시 무효화 포함)
+     * ✅ 외부 메서드에 @CacheEvict 적용
      */
     @Transactional
-    public void suppluRealQuantity(Long productId, Integer quantity) {
+    @CacheEvict(value = "productDetail", key = "#reservation.productId", beforeInvocation = false)
+    public void expireReservation(InventoryReservation reservation) {
+        String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
+
+        simpleLockManager.executeWithSimpleLock(
+                lockKey,
+                LOCK_WAIT_TIME_MS,
+                LOCK_LEASE_TIME_MS,
+                () -> {
+                    selfProvider.getObject().expireReservationInternal(reservation);
+                    return null;
+                }
+        );
+    }
+
+    /**
+     * 예약 만료 내부 로직
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void expireReservationInternal(InventoryReservation reservation) {
+        Inventory inventory = inventoryRepository.findByProductId(reservation.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("재고를 찾을 수 없습니다. 상품 ID: %d", reservation.getProductId())
+                ));
+
+        // 예약 재고 복구
+        inventory.cancelReservation(reservation.getQuantity());
+        inventoryRepository.save(inventory);
+
+        // 예약 상태 변경
+        reservation.expire();
+        reservationRepository.save(reservation);
+    }
+
+    /**
+     * 5. 재고 공급 (관리자용) - 심플락 적용
+     * ✅ 외부 메서드에 @CacheEvict 적용
+     * ✅ readOnly = false (DB 업데이트 발생)
+     */
+    @Transactional
+    @CacheEvict(
+            value = "productDetail",
+            key = "#productId",
+            beforeInvocation = false  // ✅ 트랜잭션 커밋 후 무효화
+    )
+    public void supplyRealQuantity(Long productId, Integer quantity) {
+        String lockKey = String.format("inventory:%d:modify", productId);
+
+        // ✅ Simple Lock 적용
+        simpleLockManager.executeWithSimpleLock(
+                lockKey,
+                LOCK_WAIT_TIME_MS,
+                LOCK_LEASE_TIME_MS,
+                () -> {
+                    selfProvider.getObject().supplyRealQuantityInternal(productId, quantity);
+                    return null;
+                }
+        );
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void supplyRealQuantityInternal(Long productId, Integer quantity) {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new IllegalArgumentException("재고를 찾을 수 없습니다"));
 
         inventory.supply(quantity);
+        inventoryRepository.save(inventory);
     }
 
     public record ReserveRequest(Long productId, Integer quantity) {}

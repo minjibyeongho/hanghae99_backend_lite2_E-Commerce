@@ -54,6 +54,17 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// Redis
+	// Redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	// Lettuce (Spring Boot 기본 Redis 클라이언트)
+	implementation("io.lettuce:lettuce-core")
+	// Redis 분산락 (Redisson)
+	implementation("org.redisson:redisson-spring-boot-starter:3.24.3")
+
+	// Redis 모듈 추가
+	// testImplementation("org.testcontainers:redis")  // ← 추가
 }
 
 tasks.withType<Test> {

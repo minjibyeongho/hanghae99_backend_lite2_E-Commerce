@@ -28,7 +28,7 @@ public class IssueCouponUseCase {
         boolean alreadyIssued = userCouponPort.existsByUserIdAndCouponId(userId, couponId);
         if (alreadyIssued) {
             throw new IllegalStateException(
-                String.format("이미 발급받은 쿠폰: userId={}, couponId={}", userId, couponId)
+                String.format("이미 발급받은 쿠폰: userId=%s, couponId=%s", userId, couponId)
             );
         }
 
@@ -39,7 +39,7 @@ public class IssueCouponUseCase {
         // 3. 발급 가능 여부 확인 (내부 필드 사용)
         if (!coupon.canIssue()) {
             throw new IllegalStateException(
-                    String.format("쿠폰 발급 불가: couponId={}, issued={}/{}",
+                    String.format("쿠폰 발급 불가: couponId=%s, issued=%d/%d, 소진",
                             couponId, coupon.getIssuedQuantity(), coupon.getTotalQuantity())
             );
         }
@@ -65,7 +65,7 @@ public class IssueCouponUseCase {
         couponPort.save(coupon);
 
         System.out.println(String.format(
-                "쿠폰 발급 완료: userId={}, couponId={}, userCouponId={}",
+                "쿠폰 발급 완료: userId=%s, couponId=%s, userCouponId=%s",
                 userId, couponId, userCoupon.getUserCouponId()
         ));
 

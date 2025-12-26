@@ -33,8 +33,8 @@ public class Inventory {
     @UpdateTimestamp
     private Timestamp updatedAt;               // 수정일시
 
-    @Version
-    private Long version;                       // 낙관적 락
+    // @Version
+    // private Long version;                       // 낙관적 락 -> 제거(분산락 적용)
 
     protected Inventory(){};
 
