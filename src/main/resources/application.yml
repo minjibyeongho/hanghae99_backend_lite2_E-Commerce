@@ -29,7 +29,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password:  # 비밀번호 없으면 생략
+      #password:  # 비밀번호 없으면 생략
       database: 0  # DB 인덱스 (기본값: 0)
       timeout: 2000ms  # 커넥션 타임아웃
 

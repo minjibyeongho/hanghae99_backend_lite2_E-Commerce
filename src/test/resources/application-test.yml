@@ -23,7 +23,7 @@ spring:
     generate-ddl: true  # ✅ DDL 생성 허용
     show-sql: true      # ✅ 쿼리 로그 출력
     hibernate:
-      ddl-auto: create-drop  # ✅ 테스트 시작 시 생성, 종료 시 삭제
+      ddl-auto: validate  # ✅ 테스트 시작 시 생성, 종료 시 삭제
     properties:
       hibernate:
         format_sql: true  # 쿼리 포맷팅
