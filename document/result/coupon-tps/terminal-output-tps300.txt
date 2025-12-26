@@ -1,0 +1,75 @@
+(base) minbyeongho@minbyeonghoui-MacBookPro hanghae99_backend_lite2_E-Commerce % k6 run --out json=./document/result/coupon-tps/results-tps300.json  --summary-export=./document/result/coupon-tps/summary-tps300.json ./testScript/coupon-tps300.js
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+     execution: local
+        script: ./testScript/coupon-tps300.js
+        output: json (./document/result/coupon-tps/results-tps300.json)
+
+     scenarios: (100.00%) 1 scenario, 300 max VUs, 6m30s max duration (incl. graceful stop):
+              * stress_test_300: Up to 300.00 iterations/s for 6m0s over 5 stages (maxVUs: 50-300, gracefulStop: 30s)
+
+INFO[0222] ❌ userId=49330, status=500                    source=console
+INFO[0227] ❌ userId=52247, status=500                    source=console
+INFO[0278] ❌ userId=77440, status=500                    source=console
+INFO[0287] ❌ userId=85505, status=500                    source=console
+INFO[0311] ❌ userId=94931, status=500                    source=console
+INFO[0312] ❌ userId=91718, status=500                    source=console
+
+
+  █ THRESHOLDS
+
+    errors
+    ✓ 'rate<0.05' rate=0.69%
+
+    http_req_duration
+    ✓ 'p(95)<1000' p(95)=105.83ms
+    ✓ 'p(99)<2000' p(99)=717.93ms
+
+    http_req_failed
+    ✓ 'rate<0.05' rate=0.01%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 227996 633.323135/s
+    checks_succeeded...: 99.73% 227403 out of 227996
+    checks_failed......: 0.26%  593 out of 227996
+
+    ✗ status is 200
+      ↳  99% — ✓ 56993 / ✗ 6
+    ✗ response has userCouponId
+      ↳  99% — ✓ 56993 / ✗ 6
+    ✗ p95 < 1000ms
+      ↳  99% — ✓ 56602 / ✗ 397
+    ✗ p99 < 2000ms
+      ↳  99% — ✓ 56815 / ✗ 184
+
+    CUSTOM
+    errors.........................: 0.69%  397 out of 56999
+
+    HTTP
+    http_req_duration..............: avg=32.48ms min=1.63ms med=3.23ms max=6.58s p(90)=9.86ms  p(95)=105.83ms
+      { expected_response:true }...: avg=31.8ms  min=1.63ms med=3.23ms max=6.58s p(90)=9.85ms  p(95)=105.79ms
+    http_req_failed................: 0.01%  6 out of 56999
+    http_reqs......................: 56999  158.330784/s
+
+    EXECUTION
+    iteration_duration.............: avg=32.76ms min=1.77ms med=3.46ms max=6.58s p(90)=10.27ms p(95)=106.07ms
+    iterations.....................: 56999  158.330784/s
+    vus............................: 0      min=0            max=30
+    vus_max........................: 50     min=50           max=50
+
+    NETWORK
+    data_received..................: 10 MB  29 kB/s
+    data_sent......................: 9.6 MB 27 kB/s
+
+
+
+
+running (6m00.0s), 000/050 VUs, 56999 complete and 0 interrupted iterations
+stress_test_300 ✓ [======================================] 000/050 VUs  6m0s  050.04 iters/s
