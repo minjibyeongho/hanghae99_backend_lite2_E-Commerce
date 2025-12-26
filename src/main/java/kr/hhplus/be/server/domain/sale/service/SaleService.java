@@ -3,10 +3,13 @@ package kr.hhplus.be.server.domain.sale.service;
 import kr.hhplus.be.server.domain.order.model.Order;
 import kr.hhplus.be.server.domain.order.model.OrderItem;
 import kr.hhplus.be.server.domain.product.model.Product;
+import kr.hhplus.be.server.domain.sale.vo.TopProductResponse;
 import kr.hhplus.be.server.infrastructure.product.repository.ProductJpaRepository;
 import kr.hhplus.be.server.domain.sale.model.Sale;
 import kr.hhplus.be.server.infrastructure.sale.repository.SaleJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,7 @@ public class SaleService {
      * 주문 완료 시 판매 기록 생성
      */
     @Transactional
+    @CacheEvict(value = "topProducts", allEntries = true, beforeInvocation = false)  // ✅ 캐시 삭제
     public void recordSales(Order order, List<OrderItem> orderItems) {
         for (OrderItem item : orderItems) {
             Product product = productRepository.findById(item.getProductId())
@@ -52,6 +56,7 @@ public class SaleService {
     /**
      * 최근 3일간 상위 5개 상품 조회
      */
+    @Cacheable(value = "topProducts", key = "'last3days'")  // ✅ 캐싱 적용 (1시간)
     public List<TopProductResponse> getTopProductsLast3Days() {
         LocalDateTime startDate = LocalDateTime.now().minusDays(3);
         Pageable topFive = PageRequest.of(0, 5);
@@ -68,13 +73,4 @@ public class SaleService {
                 ))
                 .collect(Collectors.toList());
     }
-
-    // Response DTO
-    public record TopProductResponse(
-            Long productId,
-            String productName,
-            Long totalSold,
-            Long totalRevenue
-    ) {}
-
 }

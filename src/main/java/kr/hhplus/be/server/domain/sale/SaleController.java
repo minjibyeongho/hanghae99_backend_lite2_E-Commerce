@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.sale;
 
 import kr.hhplus.be.server.domain.sale.service.SaleService;
+import kr.hhplus.be.server.domain.sale.vo.TopProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +20,8 @@ public class SaleController {
      * 최근 3일 상위 5개 상품 조회 API
      */
     @GetMapping("/top-products")
-    public ResponseEntity<List<SaleService.TopProductResponse>> getTopProducts() {
-        List<SaleService.TopProductResponse> response = saleService.getTopProductsLast3Days();
+    public ResponseEntity<List<TopProductResponse>> getTopProducts() {
+        List<TopProductResponse> response = saleService.getTopProductsLast3Days();
         return ResponseEntity.ok(response);
     }
 }

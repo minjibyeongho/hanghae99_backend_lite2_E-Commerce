@@ -9,6 +9,7 @@ import kr.hhplus.be.server.infrastructure.product.repository.InventoryJpaReposit
 import kr.hhplus.be.server.infrastructure.product.repository.InventoryReservationJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +65,8 @@ public class InventoryService {
     /**
      * 재고 예약 - 심플락 적용(분산락 단원)
      */
-    @Transactional(readOnly = true)
+    @Transactional
+    @CacheEvict(value = "productDetail", key = "#request.productId", beforeInvocation = false)
     public List<InventoryReservation> reserveInventory(Long userId, List<ReserveRequest> requests) {
         List<InventoryReservation> reservations = new ArrayList<>();
 
@@ -122,7 +124,8 @@ public class InventoryService {
     /**
      * 예약 확정 - 심플락 적용
      */
-    @Transactional(readOnly = true)
+    @Transactional
+    @CacheEvict(value = "productDetail", key = "#reservation.productId", beforeInvocation = false)
     public void confirmReservations(List<InventoryReservation> reservations, Long orderId) {
         for (InventoryReservation reservation : reservations) {
             String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
@@ -158,7 +161,8 @@ public class InventoryService {
     /**
      *  예약 취소(심플락 적용) - 주문 실패, 결제 실패 시
      */
-    @Transactional(readOnly = true)
+    @Transactional
+    @CacheEvict(value = "productDetail", key = "#reservation.productId", beforeInvocation = false)
     public void cancelReservations(List<InventoryReservation> reservations) {
         for (InventoryReservation reservation : reservations) {
             String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
@@ -172,8 +176,6 @@ public class InventoryService {
                         return null;
                     }
             );
-
-
         }
     }
 
@@ -201,7 +203,7 @@ public class InventoryService {
     /**
      * 4. 만료된 예약 정리 (스케줄러에서 호출) - 심플락 적용
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public int expireReservations() {
         // RESERVED 상태이면서 만료 시간이 지난 예약 조회
         List<InventoryReservation> expiredReservations =
@@ -210,6 +212,10 @@ public class InventoryService {
         int count = 0;
         for (InventoryReservation reservation : expiredReservations) {
             try {
+                // 각 상품별로 캐시 무효화
+                expireReservation(reservation);
+                count++;
+/*
                 String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
 
                 simpleLockManager.executeWithSimpleLock(
@@ -221,8 +227,8 @@ public class InventoryService {
                             return null;
                         }
                 );
+*/
 
-                count++;
             } catch (Exception e) {
                 throw new IllegalArgumentException(String.format(
                         "예약 만료 처리 실패. reservationId: %d, error: %s",
@@ -232,6 +238,26 @@ public class InventoryService {
         }
 
         return count;
+    }
+
+    /**
+     * 단일 예약 만료 처리 (캐시 무효화 포함)
+     * ✅ 외부 메서드에 @CacheEvict 적용
+     */
+    @Transactional
+    @CacheEvict(value = "productDetail", key = "#reservation.productId", beforeInvocation = false)
+    public void expireReservation(InventoryReservation reservation) {
+        String lockKey = String.format("inventory:%d:modify", reservation.getProductId());
+
+        simpleLockManager.executeWithSimpleLock(
+                lockKey,
+                LOCK_WAIT_TIME_MS,
+                LOCK_LEASE_TIME_MS,
+                () -> {
+                    selfProvider.getObject().expireReservationInternal(reservation);
+                    return null;
+                }
+        );
     }
 
     /**
@@ -254,9 +280,16 @@ public class InventoryService {
     }
 
     /**
-     *  5. 재고 추가 (입고) - 심플락 적용
+     * 5. 재고 공급 (관리자용) - 심플락 적용
+     * ✅ 외부 메서드에 @CacheEvict 적용
+     * ✅ readOnly = false (DB 업데이트 발생)
      */
-    @Transactional(readOnly = true)
+    @Transactional
+    @CacheEvict(
+            value = "productDetail",
+            key = "#productId",
+            beforeInvocation = false  // ✅ 트랜잭션 커밋 후 무효화
+    )
     public void supplyRealQuantity(Long productId, Integer quantity) {
         String lockKey = String.format("inventory:%d:modify", productId);
 

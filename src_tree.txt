@@ -75,6 +75,8 @@ src/
 │   │                   │   │   └── vo
 │   │                   │   ├── product
 │   │                   │   │   ├── ProductController.java
+│   │                   │   │   ├── config
+│   │                   │   │   │   └── InventoryConfig.java
 │   │                   │   │   ├── model
 │   │                   │   │   │   ├── Category.java
 │   │                   │   │   │   ├── Inventory.java
@@ -87,6 +89,7 @@ src/
 │   │                   │   │   │   ├── InventoryService.java
 │   │                   │   │   │   └── ProductService.java
 │   │                   │   │   └── vo
+│   │                   │   │       └── ProductDetailResponse.java
 │   │                   │   ├── sale
 │   │                   │   │   ├── SaleController.java
 │   │                   │   │   ├── model
@@ -127,7 +130,9 @@ src/
 │   │                       ├── external
 │   │                       │   └── client
 │   │                       ├── lock
+│   │                       │   ├── RedisSimpleLockManager.java
 │   │                       │   ├── RedisSpinLockManager.java
+│   │                       │   ├── SimpleLockManager.java
 │   │                       │   └── SpinLockManager.java
 │   │                       ├── order
 │   │                       │   ├── entity
@@ -190,8 +195,13 @@ src/
     │                   │   ├── inventory
     │                   │   ├── order
     │                   │   ├── product
-    │                   │   │   └── InventoryTest.java
+    │                   │   │   ├── InventoryTest.java
+    │                   │   │   └── service
+    │                   │   │       ├── InventoryServiceDistributedLockTest.java
+    │                   │   │       └── ProductCacheTest.java
     │                   │   ├── sale
+    │                   │   │   └── service
+    │                   │   │       └── SaleCacheTest.java
     │                   │   └── wallet
     │                   │       ├── entity
     │                   │       │   ├── WalletEntityTest.java
@@ -208,4 +218,4 @@ src/
     └── resources
         └── application-test.yml
 
-106 directories, 103 files
+109 directories, 110 files

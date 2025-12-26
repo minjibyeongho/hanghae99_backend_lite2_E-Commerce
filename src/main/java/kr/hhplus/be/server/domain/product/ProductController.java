@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.product;
 
 import kr.hhplus.be.server.domain.product.service.ProductService;
+import kr.hhplus.be.server.domain.product.vo.ProductDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +21,8 @@ public class ProductController {
      * 상품 단건 조회 API
      */
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductService.ProductDetailResponse> getProduct(@PathVariable Long productId) {
-        ProductService.ProductDetailResponse response = productService.getProduct(productId);
+    public ResponseEntity<ProductDetailResponse> getProduct(@PathVariable Long productId) {
+        ProductDetailResponse response = productService.getProduct(productId);
         return ResponseEntity.ok(response);
     }
 
@@ -29,8 +30,8 @@ public class ProductController {
      * 상품 목록 조회 API
      */
     @GetMapping
-    public ResponseEntity<List<ProductService.ProductDetailResponse>> getAllProducts() {
-        List<ProductService.ProductDetailResponse> response = productService.getAllProducts();
+    public ResponseEntity<List<ProductDetailResponse>> getAllProducts() {
+        List<ProductDetailResponse> response = productService.getAllProducts();
         return ResponseEntity.ok(response);
     }
 }
