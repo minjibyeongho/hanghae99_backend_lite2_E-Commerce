@@ -1,0 +1,67 @@
+(base) minbyeongho@minbyeonghoui-MacBookPro hanghae99_backend_lite2_E-Commerce % k6 run --out json=./document/result/coupon-tps/results-tps100.json  --summary-export=./document/result/coupon-tps/summary-tps100.json ./testScript/coupon-tps100.js
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+     execution: local
+        script: ./testScript/coupon-tps100.js
+        output: json (./document/result/coupon-tps/results-tps100.json)
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 3m30s max duration (incl. graceful stop):
+              * constant_rate_100: 100.00 iterations/s for 3m0s (maxVUs: 20-100, gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS
+
+    errors
+    ✓ 'rate<0.01' rate=0.12%
+
+    http_req_duration
+    ✓ 'p(95)<500' p(95)=10.28ms
+    ✓ 'p(99)<1000' p(99)=111.79ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 72000  399.946183/s
+    checks_succeeded...: 99.95% 71969 out of 72000
+    checks_failed......: 0.04%  31 out of 72000
+
+    ✓ status is 200
+    ✓ response has userCouponId
+    ✗ p95 < 500ms
+      ↳  99% — ✓ 17977 / ✗ 23
+    ✗ p99 < 1000ms
+      ↳  99% — ✓ 17992 / ✗ 8
+
+    CUSTOM
+    errors.........................: 0.12%  23 out of 18000
+
+    HTTP
+    http_req_duration..............: avg=9.43ms min=1.98ms med=6.01ms max=3.56s p(90)=8.86ms p(95)=10.28ms
+      { expected_response:true }...: avg=9.43ms min=1.98ms med=6.01ms max=3.56s p(90)=8.86ms p(95)=10.28ms
+    http_req_failed................: 0.00%  0 out of 18000
+    http_reqs......................: 18000  99.986546/s
+
+    EXECUTION
+    iteration_duration.............: avg=9.76ms min=2.14ms med=6.33ms max=3.56s p(90)=9.28ms p(95)=10.69ms
+    iterations.....................: 18000  99.986546/s
+    vus............................: 2      min=0           max=3
+    vus_max........................: 20     min=20          max=20
+
+    NETWORK
+    data_received..................: 3.3 MB 18 kB/s
+    data_sent......................: 3.0 MB 17 kB/s
+
+
+
+
+running (3m00.0s), 000/020 VUs, 18000 complete and 0 interrupted iterations
+constant_rate_100 ✓ [======================================] 000/020 VUs  3m0s  100.00 iters/s

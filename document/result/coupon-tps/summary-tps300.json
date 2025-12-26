@@ -1,0 +1,163 @@
+{
+    "metrics": {
+        "http_req_blocked": {
+            "max": 5.063,
+            "p(90)": 0.009,
+            "p(95)": 0.011,
+            "avg": 0.010811452832503034,
+            "min": 0.001,
+            "med": 0.005
+        },
+        "checks": {
+            "passes": 227403,
+            "fails": 593,
+            "value": 0.9973990771767925
+        },
+        "vus": {
+            "value": 0,
+            "min": 0,
+            "max": 30
+        },
+        "data_sent": {
+            "count": 9634271,
+            "rate": 26761.902470631616
+        },
+        "errors": {
+            "passes": 397,
+            "fails": 56602,
+            "thresholds": {
+                "rate<0.05": false
+            },
+            "value": 0.006965034474289022
+        },
+        "http_req_duration": {
+            "min": 1.638,
+            "med": 3.231,
+            "max": 6586.152,
+            "p(90)": 9.86,
+            "p(95)": 105.8311,
+            "avg": 32.487365550272706,
+            "thresholds": {
+                "p(95)<1000": false,
+                "p(99)<2000": false
+            }
+        },
+        "http_req_waiting": {
+            "avg": 32.39147295566599,
+            "min": 1.593,
+            "med": 3.156,
+            "max": 6586.06,
+            "p(90)": 9.679,
+            "p(95)": 105.75869999999998
+        },
+        "http_req_connecting": {
+            "avg": 0.003391813891471781,
+            "min": 0,
+            "med": 0,
+            "max": 4.458,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "data_received": {
+            "count": 10327660,
+            "rate": 28687.98580295731
+        },
+        "vus_max": {
+            "value": 50,
+            "min": 50,
+            "max": 50
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 31.80179067604782,
+            "min": 1.638,
+            "med": 3.231,
+            "max": 6586.152,
+            "p(90)": 9.856200000000005,
+            "p(95)": 105.79759999999999
+        },
+        "http_req_sending": {
+            "avg": 0.029298321023172466,
+            "min": 0.003,
+            "med": 0.023,
+            "max": 9.64,
+            "p(90)": 0.038,
+            "p(95)": 0.045
+        },
+        "http_req_receiving": {
+            "avg": 0.06659427358374549,
+            "min": 0.006,
+            "med": 0.047,
+            "max": 12.274,
+            "p(90)": 0.115,
+            "p(95)": 0.152
+        },
+        "http_reqs": {
+            "rate": 158.33078381576888,
+            "count": 56999
+        },
+        "iteration_duration": {
+            "avg": 32.76560064739759,
+            "min": 1.772084,
+            "med": 3.462125,
+            "max": 6586.373208,
+            "p(90)": 10.279942000000002,
+            "p(95)": 106.07809559999998
+        },
+        "http_req_failed": {
+            "passes": 6,
+            "fails": 56993,
+            "thresholds": {
+                "rate<0.05": false
+            },
+            "value": 0.00010526500464920438
+        },
+        "iterations": {
+            "count": 56999,
+            "rate": 158.33078381576888
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "status is 200": {
+                    "passes": 56993,
+                    "fails": 6,
+                    "name": "status is 200",
+                    "path": "::status is 200",
+                    "id": "6210a8cd14cd70477eba5c5e4cb3fb5f"
+                },
+                "response has userCouponId": {
+                    "path": "::response has userCouponId",
+                    "id": "7f515825d14df4a4b20c32aa50002e74",
+                    "passes": 56993,
+                    "fails": 6,
+                    "name": "response has userCouponId"
+                },
+                "p95 < 1000ms": {
+                    "passes": 56602,
+                    "fails": 397,
+                    "name": "p95 < 1000ms",
+                    "path": "::p95 < 1000ms",
+                    "id": "6cb16a2a5adf8a369165d642c9993a6d"
+                },
+                "p99 < 2000ms": {
+                    "passes": 56815,
+                    "fails": 184,
+                    "name": "p99 < 2000ms",
+                    "path": "::p99 < 2000ms",
+                    "id": "24c476780dcb87411b8809050c300a39"
+                }
+            }
+    }
+}
