@@ -11,8 +11,6 @@ import kr.hhplus.be.server.domain.order.repository.OrderRepository;
 import kr.hhplus.be.server.domain.product.model.Inventory;
 import kr.hhplus.be.server.domain.product.model.Product;
 import kr.hhplus.be.server.domain.sale.vo.TopProductResponse;
-import kr.hhplus.be.server.infrastructure.order.repository.OrderItemJpaRepository;
-import kr.hhplus.be.server.infrastructure.order.repository.OrderJpaRepository;
 import kr.hhplus.be.server.infrastructure.product.repository.InventoryJpaRepository;
 import kr.hhplus.be.server.infrastructure.product.repository.ProductJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
